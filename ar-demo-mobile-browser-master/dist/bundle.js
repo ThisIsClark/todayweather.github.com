@@ -23206,6 +23206,7 @@ window.onload = function () {
                 // detect markers
                 var detector = new AR.Detector();
                 var markers = detector.detect(imageData);
+                alert('detect marker ' + markers.id);
 
                 // return the result
                 return markers;
@@ -23341,7 +23342,7 @@ window.onload = function () {
             navigator.getUserMedia(constraints, function (stream) {
                 domElement.src = URL.createObjectURL(stream);
             }, function (error) {
-                alert('Cant getUserMedia()! due to ', error);
+                alert('[2]Cant getUserMedia()! due to ' + error);
             });
         });
 
@@ -23523,7 +23524,8 @@ window.onload = function () {
         object3d.visible = false;
         // see if this.markerId has been found
         markers.forEach(function (marker) {
-            jsArucoMarker.markerToObject3D(marker, object3d, domElement);
+			alert('reMark, Marker id is ' + marker.id);
+			jsArucoMarker.markerToObject3D(marker, object3d, domElement);
             object3d.visible = true;
         });
     }

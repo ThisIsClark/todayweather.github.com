@@ -33,15 +33,56 @@ window.addEventListener('load', function() {
             // Projections
             awe.projections.add({ 
               id: 'wormhole',
-              geometry: {shape: 'plane', height: 400, width: 400},
+              geometry: {shape: 'cube', x: 100, y: 100, z: 100},
               position: {x: 0, y: 0, z: 0},
-              rotation: {x: 90, z: 45},
+              rotation: {x: 0, z: 0},
               material: {
                 type: 'phong',
-                color: 0x000000
+                color: 0xFFFFFF
               }
             }, {poi_id: 'marker'});
+            awe.projections.add({
+                id: 'cube_one',
+                geometry: {shape: 'cube', x: 100, y: 100, z: 100},
+                rotation: {x: 0, y: 0},
+                position: {x: 500, y: 0, z: -100},
+                material: {
+                    type: 'phong',
+                    color: 0xFF0000
+                }
+            }, {poi_id: 'marker'});
+              awe.projections.add({
+                  id: 'cube_two',
+                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
+                  rotation: {x: 0, y: 0},
+                  position: {x: -500, y: 0, z: -100},
+                  material: {
+                      type: 'phong',
+                      color: 0x00FF00
+                  }
+              }, {poi_id: 'marker'});
+              awe.projections.add({
+                  id: 'cube_three',
+                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
+                  rotation: {x: 0, y: 0},
+                  position: {x: 0, y: 500, z: -100},
+                  material: {
+                      type: 'phong',
+                      color: 0x0000FF
+                  }
+              }, {poi_id: 'marker'});
+              awe.projections.add({
+                  id: 'cube_four',
+                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
+                  rotation: {x: 0, y: 0},
+                  position: {x: 0, y: -500, z: -100},
+                  material: {
+                      type: 'phong',
+                      color: 0x000000
+                  }
+              }, {poi_id: 'marker'});
 
+            /*
             awe.projections.add({
               id: 'ar_button_one',
               geometry: {shape: 'cube', x: 60, y: 30, z: 5},
@@ -118,7 +159,7 @@ window.addEventListener('load', function() {
                 color: 0x8000FF
               }
             }, {poi_id: 'marker'});
-
+*/
             awe.events.add([{
               id: 'ar_tracking_marker',
               device_types: {
@@ -152,6 +193,25 @@ window.addEventListener('load', function() {
                         id: 'wormhole'
                       }
                     });
+                  } else if (event.detail['18']) {
+                      awe.pois.update({
+                          data: {
+                              visible: true,
+                              position: {x: 0, y: 0, z: 0},
+                              matrix: event.detail['18'].transform
+                          },
+                          where: {
+                              id: 'marker'
+                          }
+                      });
+                      awe.projections.update({
+                          data: {
+                              visible: true
+                          },
+                          where: {
+                              id: 'wormhole'
+                          }
+                      });
                   } else if (menu_open) {
                     awe.projections.update({
                       data: {

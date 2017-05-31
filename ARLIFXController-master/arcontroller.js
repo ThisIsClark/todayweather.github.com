@@ -22,144 +22,13 @@ window.addEventListener('load', function() {
             'lib/awe-standard-window_resized.js',
             'lib/awe-standard-object_clicked.js',
             'lib/awe-jsartoolkit-dependencies.js',
-            'lib/awe.marker_ar.js'
+            'lib/awe.marker_ar.js',
+            'lib/awe.geo_ar.js'
           ],
           success: function() {
             window.awe.setup_scene();
 
             // Points of Interest
-            awe.pois.add({id: 'marker', position: {x: 0, y: 0, z: 10000}, visible: false});
-
-            // Projections
-            awe.projections.add({ 
-              id: 'wormhole',
-              geometry: {shape: 'cube', x: 100, y: 100, z: 100},
-              position: {x: 0, y: 0, z: 0},
-              rotation: {x: 0, z: 0},
-              material: {
-                type: 'phong',
-                color: 0xFFFFFF
-              }
-            }, {poi_id: 'marker'});
-            awe.projections.add({
-                id: 'cube_one',
-                geometry: {shape: 'cube', x: 100, y: 100, z: 100},
-                rotation: {x: 0, y: 0},
-                position: {x: 500, y: 0, z: -100},
-                material: {
-                    type: 'phong',
-                    color: 0xFF0000
-                }
-            }, {poi_id: 'marker'});
-              awe.projections.add({
-                  id: 'cube_two',
-                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
-                  rotation: {x: 0, y: 0},
-                  position: {x: -500, y: 0, z: -100},
-                  material: {
-                      type: 'phong',
-                      color: 0x00FF00
-                  }
-              }, {poi_id: 'marker'});
-              awe.projections.add({
-                  id: 'cube_three',
-                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
-                  rotation: {x: 0, y: 0},
-                  position: {x: 0, y: 500, z: -100},
-                  material: {
-                      type: 'phong',
-                      color: 0x0000FF
-                  }
-              }, {poi_id: 'marker'});
-              awe.projections.add({
-                  id: 'cube_four',
-                  geometry: {shape: 'cube', x: 100, y: 100, z: 100},
-                  rotation: {x: 0, y: 0},
-                  position: {x: 0, y: -500, z: -100},
-                  material: {
-                      type: 'phong',
-                      color: 0x000000
-                  }
-              }, {poi_id: 'marker'});
-
-            /*
-            awe.projections.add({
-              id: 'ar_button_one',
-              geometry: {shape: 'cube', x: 60, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0xFF0000
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_two',
-              geometry: {shape: 'cube', x: 60, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0xFF6600
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_three',
-              geometry: {shape: 'cube', x: 110, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0xFFFF00
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_four',
-              geometry: {shape: 'cube', x: 150, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0xFFFFFF
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_five',
-              geometry: {shape: 'cube', x: 180, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0x00FF00
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_six',
-              geometry: {shape: 'cube', x: 150, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0x0080FF
-              }
-            }, {poi_id: 'marker'});
-
-            awe.projections.add({
-              id: 'ar_button_seven',
-              geometry: {shape: 'cube', x: 100, y: 30, z: 5},
-              rotation: {y: 45},
-              position: {x: -5, y: -31, z: -5},
-              material: {
-                type: 'phong',
-                color: 0x8000FF
-              }
-            }, {poi_id: 'marker'});
-*/
             awe.events.add([{
               id: 'ar_tracking_marker',
               device_types: {
@@ -175,43 +44,24 @@ window.addEventListener('load', function() {
               handler: function(event) {
                 if (event.detail) {
                   if (event.detail['64']) {
-                    awe.pois.update({
-                      data: {
-                        visible: true,
-                        position: {x: 0, y: 0, z: 0},
-                        matrix: event.detail['64'].transform
-                      },
-                      where: {
-                        id: 'marker'
-                      }
-                    });
-                    awe.projections.update({
-                      data: {
-                        visible: true
-                      },
-                      where: {
-                        id: 'wormhole'
-                      }
-                    });
+					  alert("64");
                   } else if (event.detail['18']) {
-                      awe.pois.update({
-                          data: {
-                              visible: true,
-                              position: {x: 0, y: 0, z: 0},
-                              matrix: event.detail['18'].transform
-                          },
-                          where: {
-                              id: 'marker'
-                          }
-                      });
-                      awe.projections.update({
-                          data: {
-                              visible: true
-                          },
-                          where: {
-                              id: 'wormhole'
-                          }
-                      });
+						var device_type = awe.device_type();
+						var browser_unsupported = false;
+						if (device_type != 'android') {
+							browser_unsupported = true;
+						} else if (!navigator.userAgent.match(/chrome|firefox/i)) {
+							browser_unsupported = true;
+						}
+						if (browser_unsupported) {
+							document.body.innerHTML = '<p>This demo currently requires a standards compliant Android browser (e.g. Chrome M33).</p>';
+							return;
+						}
+
+						// setup and paint the scene
+						window.awe.setup_scene();
+
+					  alert("18");
                   } else if (menu_open) {
                     awe.projections.update({
                       data: {
@@ -237,6 +87,7 @@ window.addEventListener('load', function() {
               }
             }]);
 
+/*
             window.addEventListener('object_clicked', function(e) {
               switch (e.detail.projection_id) {
                 case 'wormhole':
@@ -405,6 +256,7 @@ window.addEventListener('load', function() {
                 break;
               }
             }, false);
+*/
           } // success()
         },
         {

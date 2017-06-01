@@ -34,23 +34,15 @@ window.addEventListener('load', function() {
 			} else if (!navigator.userAgent.match(/chrome|firefox/i)) {
 				browser_unsupported = true;
 			}
+			/*
 			if (browser_unsupported) {
 				document.body.innerHTML = '<p>This demo currently requires a standards compliant Android browser (e.g. Chrome M33).</p>';
 				return;
 			}
+			*/
 
 			// setup and paint the scene
 			window.awe.setup_scene();
-
-			// add some points of interest (poi) for each of the compass points
-			awe.pois.add({ id:'north', position: { x:0, y:0, z:200 } });
-			awe.pois.add({ id:'north_east', position: { x:200, y:0, z:200 } });
-			awe.pois.add({ id:'east', position: { x:200, y:0, z:0 } });
-			awe.pois.add({ id:'south_east', position: { x:200, y:0, z:-200 } });
-			awe.pois.add({ id:'south', position: { x:0, y:0, z:-200 } });
-			awe.pois.add({ id:'south_west', position: { x:-200, y:0, z:-200 } });
-			awe.pois.add({ id:'west', position: { x:-200, y:0, z:0 } });
-			awe.pois.add({ id:'north_west', position: { x:-200, y:0, z:200 } });
 
             // Points of Interest
             awe.events.add([{
@@ -70,7 +62,32 @@ window.addEventListener('load', function() {
                   if (event.detail['64']) {
 					  alert("64");
                   } else if (event.detail['18'] && !already_showed) {
-					already_showed = true;
+					alert("18");
+					already_showed = true;	
+              // setup some code to handle when an object is clicked/tapped
+              window.addEventListener('object_clicked', function(e) { 
+                var p = awe.projections.view(e.detail.projection_id);
+                awe.projections.update({ // rotate clicked object by 180 degrees around x and y axes over 10 seconds
+                  data:{
+                    animation: {
+                      duration: 10,
+                    },
+                    rotation:{ y: p.rotation.y+180, x: p.rotation.x+180 }
+                  },
+                  where:{ id:e.detail.projection_id }
+                });
+              }, false);
+
+			        // add some points of interest (poi) for each of the compass points
+			        awe.pois.add({ id:'north', position: { x:0, y:0, z:200 } });
+			        awe.pois.add({ id:'north_east', position: { x:200, y:0, z:200 } });
+			        awe.pois.add({ id:'east', position: { x:200, y:0, z:0 } });
+			        awe.pois.add({ id:'south_east', position: { x:200, y:0, z:-200 } });
+			        awe.pois.add({ id:'south', position: { x:0, y:0, z:-200 } });
+			        awe.pois.add({ id:'south_west', position: { x:-200, y:0, z:-200 } });
+			        awe.pois.add({ id:'west', position: { x:-200, y:0, z:0 } });
+			        awe.pois.add({ id:'north_west', position: { x:-200, y:0, z:200 } });
+			
 			        // add projections to each of the pois
 			        awe.projections.add({ 
 			          id:'n', 
@@ -148,25 +165,6 @@ window.addEventListener('load', function() {
 			          },
 			        }, { poi_id: 'north_west' });
 
-                  } else if (menu_open) {
-                    awe.projections.update({
-                      data: {
-                        visible: false
-                      },
-                      where: {
-                        id: 'wormhole'
-                      }
-                    });
-                  }
-                  else {
-                    awe.pois.update({
-                      data: {
-                        visible: false
-                      },
-                      where: {
-                        id: 'marker'
-                      }
-                    });
                   }
                   awe.scene_needs_rendering = 1;
                 }

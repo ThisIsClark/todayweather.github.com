@@ -28,6 +28,7 @@ window.addEventListener('load', function() {
           success: function() {
 			var device_type = awe.device_type();
 			var browser_unsupported = false;
+			var already_showed = false;
 			if (device_type != 'android') {
 				browser_unsupported = true;
 			} else if (!navigator.userAgent.match(/chrome|firefox/i)) {
@@ -41,6 +42,15 @@ window.addEventListener('load', function() {
 			// setup and paint the scene
 			window.awe.setup_scene();
 
+			// add some points of interest (poi) for each of the compass points
+			awe.pois.add({ id:'north', position: { x:0, y:0, z:200 } });
+			awe.pois.add({ id:'north_east', position: { x:200, y:0, z:200 } });
+			awe.pois.add({ id:'east', position: { x:200, y:0, z:0 } });
+			awe.pois.add({ id:'south_east', position: { x:200, y:0, z:-200 } });
+			awe.pois.add({ id:'south', position: { x:0, y:0, z:-200 } });
+			awe.pois.add({ id:'south_west', position: { x:-200, y:0, z:-200 } });
+			awe.pois.add({ id:'west', position: { x:-200, y:0, z:0 } });
+			awe.pois.add({ id:'north_west', position: { x:-200, y:0, z:200 } });
 
             // Points of Interest
             awe.events.add([{
@@ -59,17 +69,8 @@ window.addEventListener('load', function() {
                 if (event.detail) {
                   if (event.detail['64']) {
 					  alert("64");
-                  } else if (event.detail['18']) {
-			        // add some points of interest (poi) for each of the compass points
-			        awe.pois.add({ id:'north', position: { x:0, y:0, z:200 } });
-			        awe.pois.add({ id:'north_east', position: { x:200, y:0, z:200 } });
-			        awe.pois.add({ id:'east', position: { x:200, y:0, z:0 } });
-			        awe.pois.add({ id:'south_east', position: { x:200, y:0, z:-200 } });
-			        awe.pois.add({ id:'south', position: { x:0, y:0, z:-200 } });
-			        awe.pois.add({ id:'south_west', position: { x:-200, y:0, z:-200 } });
-			        awe.pois.add({ id:'west', position: { x:-200, y:0, z:0 } });
-			        awe.pois.add({ id:'north_west', position: { x:-200, y:0, z:200 } });
-			
+                  } else if (event.detail['18'] && !already_showed) {
+					already_showed = true;
 			        // add projections to each of the pois
 			        awe.projections.add({ 
 			          id:'n', 

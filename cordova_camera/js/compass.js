@@ -12,11 +12,11 @@ var options = {
 }; // Update every 3 seconds
 
 function onPhoneDataSuccess(imageData) {
-
+	alert("Pic got");
 }
 
 function onFail(message) {
-
+	alert("error : " + message);
 }
 
 //navigator.compass.getCurrentHeading(onSuccess, onError);                
@@ -26,6 +26,7 @@ function launchCamera() {
 	//var watchID = navigator.compass.watchHeading(onSuccess, onError, options);
 	navigator.camera.getPicture(onPhoneDataSuccess, onFail, {
 		quality: 50,  
-        destinationType: Camera.DestinationType.DATA_URL
+        destinationType: Camera.DestinationType.DATA_URL,
+        sourceType: Camera.PictureSourceType.CAMERA
     });
 }

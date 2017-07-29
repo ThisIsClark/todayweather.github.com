@@ -20,6 +20,7 @@
      function checkBrowser(e){
        var ua = navigator.userAgent.toLowerCase();
        var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
+       isAndroid = true;
        if(!isAndroid) {
          alert('该功能仅在 Android 上可用');
          window.event.preventDefault();

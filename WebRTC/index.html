@@ -2,10 +2,25 @@
 <html>
   <head>
     <title>WebRTC</title>
+    <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
+    <script>
+     window.onload = function(){
+       var el = document.createElement('div');
+       document.body.appendChild(el);
+
+       eruda.init({
+         container: el,
+       });
+     }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#cf3a3f">
+    <meta charset="utf-8">
+
     <script type="text/javascript" charset="utf-8">
 
 		function startWebcam() {
-		    alert("button clicked");
+		    console.log("button clicked");
 		    navigator.getUserMedia || (navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
 
 			if (!navigator.getUserMedia) {

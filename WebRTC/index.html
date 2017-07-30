@@ -29,6 +29,7 @@
     }, function(localMediaStream) {
         var video = document.getElementById('video');
         video.src = window.URL.createObjectURL(localMediaStream);
+        console.log("video.src is " + video.src);
         video.onloadedmetadata = function(e) {
             console.log("Label: " + localMediaStream.label);
             console.log("AudioTracks" , localMediaStream.getAudioTracks());

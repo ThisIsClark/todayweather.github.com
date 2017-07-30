@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WebRTC</title>
+    <script type="text/javascript" charset="utf-8">
+
+		function startWebcam() {
+		    alert("button clicked");
+		    navigator.getUserMedia || (navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
+
+			if (!navigator.getUserMedia) {
+			    return;
+			}
+		    navigator.getUserMedia({
+		        video: true,
+		        audio: true
+		    }, onSuccess, onError);
+
+		    function onSuccess(stream) {
+
+		        var video = document.getElementById('webcam');
+
+		        if (window.URL) {
+		            video.src = window.URL.createObjectURL(stream);
+		        } else {
+		            video.src = stream;
+		        }
+
+		        video.autoplay = true;
+		        //or video.play();
+		    }
+
+		    function onError() {}
+		}
+    </script>
+  </head>
+  <body>
+	<button onclick="startWebcam()">Web Camera</button><Br/>
+	<video id="webcam"></video>
+  </body>
+</html>

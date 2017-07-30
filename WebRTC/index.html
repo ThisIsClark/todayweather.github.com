@@ -20,12 +20,15 @@
     <script type="text/javascript" charset="utf-8">
 
 		function startWebcam() {
-		    console.log("button clicked");
-		    navigator.getUserMedia || (navigator.getUserMedia = navigator.mozGetUserMedia || navigator.webkitGetUserMedia || navigator.msGetUserMedia);
-
+		    console.log("Button Clicked");
+			navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    		window.URL = window.URL || window.webkitURL;
+			
 			if (!navigator.getUserMedia) {
+			    console.log("return");
 			    return;
 			}
+			
 		    navigator.getUserMedia({
 		        video: true,
 		        audio: true
@@ -33,6 +36,7 @@
 
 		    function onSuccess(stream) {
 
+		        console.log("getUserMedia succeed");
 		        var video = document.getElementById('webcam');
 
 		        if (window.URL) {
@@ -45,7 +49,9 @@
 		        //or video.play();
 		    }
 
-		    function onError() {}
+		    function onError(error) {
+	    		console.log("error is " + error);
+		    }
 		}
     </script>
   </head>

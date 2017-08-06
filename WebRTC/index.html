@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>WebRTC 0508</title>
+    <title>WebRTC 0514</title>
     <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
     <script>
      window.onload = function(){
@@ -63,11 +63,13 @@
                 video.setAttribute('width',  document.body.clientWidth);	
                 video.setAttribute('height',  document.body.clientHeight);
                 document.body.appendChild(video);
+                /*
                 video.style.position = 'absolute';
                 video.style.top = '-999em';
                 video.style.left = '-999em';
                 video.style.height = '100%';
                 video.style.width = '100%';				
+		        */
 		        if (window.URL) {
 		            video.src = window.URL.createObjectURL(stream);
 		        } else {

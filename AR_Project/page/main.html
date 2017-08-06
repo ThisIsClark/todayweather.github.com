@@ -1,24 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<title>“宜居水岸” - AR应用 - 0611</title>
-    <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
-    <script>
-     window.onload = function(){
-       console.log("eruda");
-       var el = document.createElement('div');
-       document.body.appendChild(el);
-
-       eruda.init({
-         container: el,
-       });
-     }
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#cf3a3f">
-
+  <title>AR LIFX Controller</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+  <meta charset="utf-8"/>
   <style type="text/css">
   * {
   	margin: 0;
@@ -68,14 +53,13 @@
 	<script type="text/javascript" src="lib/awe-loader-min.js"></script>
 	<script type="text/javascript" src="lib/underscore-min.js"></script>
 	<script type="text/javascript" src="arcontroller.js"></script>
-
-	<div id="state_bar">
-		
-	</div>
-	<img id="frame" src="../img/main/frame.png"/>
-	<img id="map" src="../img/main/map_frame.png"/>
-	<img id="guide" src="../img/main/guide.png" />
-	<img id="text_back" src="../img/main/text_frame.png" />
+  <div id="state_bar">
+    
+  </div>
+  <img id="frame" src="img/main/frame.png"/>
+  <img id="map" src="img/main/map_frame.png"/>
+  <img id="guide" src="img/main/guide.png" />
+  <img id="text_back" src="img/main/text_frame.png" />
 
 </body>
 </html>

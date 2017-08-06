@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-	<title>“宜居水岸” - AR应用 - 0554</title>
+	<title>“宜居水岸” - AR应用 - 0611</title>
     <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
     <script>
      window.onload = function(){
@@ -19,52 +19,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#cf3a3f">
 
-	<style type="text/css">
-		img,div {
-			position: absolute;
-		}
-		div#state_bar {
-			background: brown;
-			width: 100%;
-			height: 8%;
-			margin: 0;
-		}
-		img#frame {
-			width: 100%;
-			height: 100%;
-		}
-		img#map {
-			width:35.5%;
-			top:0;
-			right: 0;
-		}
-		img#guide {
-			width: 16.6%;
-			right: 3%;
-			bottom: 2%;
-		}
-		img#text_back {
-			width: 69.6%;
-			left: 7%;
-			bottom: 2.5%;
-		}
-		#container {
-			position: absolute;
-			left: 0;
-			top: 0;
-			bottom: 0;
-			right: 0;
-			overflow: hidden;
-		}
+  <style type="text/css">
+  * {
+  	margin: 0;
+  	padding: 0;
+  }
+  img,div {
+    position: absolute;
+  }
+  div#state_bar {
+    background: brown;
+    width: 100%;
+    height: 8%;
+    margin: 0;
+  }
+  img#frame {
+    width: 100%;
+    height: 100%;
+  }
+  img#map {
+    width:35.5%;
+    top:0;
+    right: 0;
+  }
+  img#guide {
+    width: 16.6%;
+    right: 3%;
+    bottom: 2%;
+  }
+  img#text_back {
+    width: 69.6%;
+    left: 7%;
+    bottom: 2.5%;
+  }
 
-	</style>
+  #container {
+  	position: absolute;
+  	left: 0;
+  	top: 0;
+  	bottom: 0;
+  	right: 0;
+  	overflow: hidden;
+  }
+  </style>
 </head>
-<body style="overflow: hidden;position: fixed;width: 100%;height: 100%;margin: 0;">
+<body>
 	<div id="container"></div>
 	<script type="text/javascript" src="lib/awe-loader-min.js"></script>
 	<script type="text/javascript" src="lib/underscore-min.js"></script>
 	<script type="text/javascript" src="arcontroller.js"></script>
-<!--
+
 	<div id="state_bar">
 		
 	</div>
@@ -72,6 +76,6 @@
 	<img id="map" src="../img/main/map_frame.png"/>
 	<img id="guide" src="../img/main/guide.png" />
 	<img id="text_back" src="../img/main/text_frame.png" />
--->
+
 </body>
 </html>

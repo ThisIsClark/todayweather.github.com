@@ -29,25 +29,31 @@
 			    return;
 			}
 			
-	        var exArray = []; //存储设备源ID  
-	        MediaStreamTrack.getSources(function (sourceInfos) {  
-	            for (var i = 0; i != sourceInfos.length; ++i) {  
-	                var sourceInfo = sourceInfos[i];  
-	                console.log("sourceinfo " + sourceInfo);
-	                //这里会遍历audio,video，所以要加以区分  
-	                if (sourceInfo.kind === 'video') {  
-	                    exArray.push(sourceInfo.id);  
-	                }  
-	            }  
-	        });  
+            var options = {
+              video: true
+            };
+			MediaStreamTrack.getSources(function(source_infos) {
+				var selected_source = null;
+				for (var i = 0; i != source_infos.length; ++i) {
+					var source_info = source_infos[i];
+					if (source_info.kind === 'video') {
+					  if (!selected_source || (source_info.facing && source_info.facing == "environment")) {
+					    selected_source = source_info.id;
+					  }
+					}
+				}
+	            if (video_source_id) {
+	              options.video = {
+	                optional: [{ facingMode: "environment" }, {sourceId: video_source_id}]
+	              };
+	            }
+            });
+
+  
+
 
 		    navigator.getUserMedia({
-				'video': {  
-                        'optional': [{  
-                            'sourceId': exArray[1] //0为前置摄像头，1为后置  
-                        }]  
-                    },  		    
-                }, onSuccess, onError);
+				options, onSuccess, onError);
 
 		    function onSuccess(stream) {
 

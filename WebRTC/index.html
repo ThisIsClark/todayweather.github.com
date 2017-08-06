@@ -47,6 +47,7 @@
 <body>
   <div id="main">
     <h2><b>getUserMedia Test Page</b></h2>
+    <p><a href="https://mozilla.github.io/webrtc-landing">Main webrtc demo page</a></p>
     <div id="startbuttons">
       <input value="Video" onclick="startVideo();" type="button">
       <input value="Audio" onclick="startAudio();" type="button">
@@ -55,6 +56,7 @@
       <input value="Window" onclick="startWindow();" type="button">
       <input value="Application" onclick="startApplication();" type="button">
       <br><input type="text" id="fps_input" value="0">
+    <label for="fps_input">FPS desired (0 for default)</label>
     </div>
     <div id="images">
        <div id="content"></div>
@@ -73,6 +75,8 @@
   <script type="application/javascript">
   var video_status = false;
   var video = document.createElement("video");
+  video.setAttribute("width", 640);
+  video.setAttribute("height", 480);
   var muted = document.createElement("input");
   muted.type = "checkbox";
   muted.checked = true;

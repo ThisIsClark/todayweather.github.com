@@ -42,9 +42,9 @@
 					  }
 					}
 				}
-	            if (video_source_id) {
+	            if (selected_source) {
 	              options.video = {
-	                optional: [{ facingMode: "environment" }, {sourceId: video_source_id}]
+	                optional: [{ facingMode: "environment" }, {sourceId: selected_source}]
 	              };
 	            }
             });

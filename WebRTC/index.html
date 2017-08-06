@@ -42,15 +42,13 @@
 					  }
 					}
 				}
+				console.log("selected_source " + selected_source)
 	            if (selected_source) {
 	              options.video = {
 	                optional: [{ facingMode: "environment" }, {sourceId: selected_source}]
 	              };
 	            }
             });
-
-  
-
 
 		    navigator.getUserMedia(
 				options, onSuccess, onError);

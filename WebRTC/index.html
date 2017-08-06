@@ -29,6 +29,17 @@
 			    return;
 			}
 			
+	        var exArray = []; //存储设备源ID  
+	        MediaStreamTrack.getSources(function (sourceInfos) {  
+	            for (var i = 0; i != sourceInfos.length; ++i) {  
+	                var sourceInfo = sourceInfos[i];  
+	                //这里会遍历audio,video，所以要加以区分  
+	                if (sourceInfo.kind === 'video') {  
+	                    exArray.push(sourceInfo.id);  
+	                }  
+	            }  
+	        });  
+
 		    navigator.getUserMedia({
 				'video': {  
                         'optional': [{  
@@ -40,6 +51,7 @@
 		    function onSuccess(stream) {
 
 		        console.log("getUserMedia succeed");
+
 		        var video = document.getElementById('webcam');
 		        video.setAttribute('width', window.innerWidth);
 		        video.setAttribute('height', window.innerHeight);

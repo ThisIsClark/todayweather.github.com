@@ -30,9 +30,12 @@
 			}
 			
 		    navigator.getUserMedia({
-		        video: true,
-		        audio: true
-		    }, onSuccess, onError);
+				'video': {  
+                        'optional': [{  
+                            'sourceId': exArray[1] //0为前置摄像头，1为后置  
+                        }]  
+                    },  		    
+                }, onSuccess, onError);
 
 		    function onSuccess(stream) {
 
@@ -45,8 +48,6 @@
 		            video.src = stream;
 		        }
 		        video.play();
-		        video.pause();
-		        video.play();
 		    }
 
 		    function onError(error) {
@@ -56,6 +57,6 @@
     </script>
   </head>
   <body onload="startWebcam()">
-	<video id="webcam" height="120"></video>
+	<video id="webcam" ></video>
   </body>
 </html>

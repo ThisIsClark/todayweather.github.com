@@ -1,4 +1,5 @@
 window.addEventListener('load', function() {
+  console.log("load");
   var menu_open = false;
 
   window.awe.init({

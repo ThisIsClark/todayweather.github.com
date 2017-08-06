@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>WebRTC 0318</title>
+    <title>WebRTC 0508</title>
     <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
     <script>
      window.onload = function(){
@@ -59,8 +59,9 @@
 
 		        //var video = document.getElementById('webcam');
                 video = document.createElement('video');
-                video.setAttribute('width', '100%');	
-                video.setAttribute('height', '100%');
+                video.setAttribute('autoplay', true);
+                video.setAttribute('width',  document.body.clientWidth);	
+                video.setAttribute('height',  document.body.clientHeight);
                 document.body.appendChild(video);
                 video.style.position = 'absolute';
                 video.style.top = '-999em';

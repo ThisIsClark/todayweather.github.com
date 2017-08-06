@@ -33,6 +33,7 @@
 	        MediaStreamTrack.getSources(function (sourceInfos) {  
 	            for (var i = 0; i != sourceInfos.length; ++i) {  
 	                var sourceInfo = sourceInfos[i];  
+	                console.log("sourceinfo " + sourceInfo);
 	                //这里会遍历audio,video，所以要加以区分  
 	                if (sourceInfo.kind === 'video') {  
 	                    exArray.push(sourceInfo.id);  

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>WebRTC</title>
+    <title>WebRTC 0806</title>
     <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
     <script>
      window.onload = function(){
@@ -41,6 +41,8 @@
 
 		        console.log("getUserMedia succeed");
 		        var video = document.getElementById('webcam');
+		        video.setAttribute('width', window.innerWidth);
+		        video.setAttribute('height', window.innerHeight);
 
 		        if (window.URL) {
 		            video.src = window.URL.createObjectURL(stream);

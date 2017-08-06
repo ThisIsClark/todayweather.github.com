@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta http-equiv="refresh" content="5;URL=./main.html">
+	<title>“宜居水岸” - AR应用</title>
+    <script type="text/javascript">
+    	
+   		document.addEventListener('plusready', function(){
+   			//console.log("所有plus api都应该在此事件发生后调用，否则会出现plus is undefined。"
+   		});
+   		document.addEventListener('touchstart',function(){
+   			
+   		});
+    </script>
+    <script type="text/javascript" src="../config/text_config.js"></script>
+	<style type="text/css">
+		@-webkit-keyframes loading_show
+    	{
+    		0% {height:0%;}
+    		100% {height: 100%;}
+    	}
+    	@font-face {
+    		font-family:slithFont;
+    		src: url(../font/slith.ttf)
+    	}
+		img {
+			position: absolute;
+			width: 100%;
+    		left:50%;
+    		transform: translate(-50%);
+		}
+    	div.loadingT{
+    		position: absolute;
+    		width:14vw;
+    		top:30vh;
+    		left:10%;
+    		-webkit-writing-mode:vertical-lr;
+    		font-family: slithFont;    		
+    		font-size: 8vh;
+    		overflow: hidden;
+    	}
+    	div.loadingC{
+    		position: absolute;
+    		width:50%;
+    		top:70vh;
+    		left:45%;
+    		font-family: slithFont;    		
+    		font-size: 3vh;
+    		line-height: 4vh;
+    		overflow: hidden;
+    	}
+    	div#cover {
+    		position: absolute;
+    		width:100%;
+    		height: 0%;
+    		padding: 0;
+    		top:0%;
+    		border-bottom: 1px solid;
+    		border-color: rgba(192,192,192,0.4);
+    		overflow: hidden;
+    		-webkit-animation: loading_show 4s linear 1s forwards;
+    	}
+    	img#bg1 {
+    		z-index: -1;
+    		-webkit-filter:grayscale(1);
+    	}
+    	img#bg2 {
+    		z-index: -1;
+    		transform: translate(-50%);
+    	}
+	</style>
+</head>
+<body style="overflow: hidden;position: fixed;width: 100%;height: 100%;margin: 0;">
+	<img id="bg1" src="../img/loading/bg.png" />
+	<div class="loadingT">
+		<script>document.write(loading1_title)</script>
+	</div>
+	<div class="loadingC">
+		<script>document.write(loading1_content)</script>
+	</div>
+	<div id="cover">
+		<img id="bg2" src="../img/loading/bg.png"/>
+		<div class="loadingT" style="color:darkblue;">
+			<script>document.write(loading1_title)</script>
+		</div>
+		<div class="loadingC" style="color:indianred;">
+			<script>document.write(loading1_content)</script>
+		</div>
+	</div>
+</body>
+</html>

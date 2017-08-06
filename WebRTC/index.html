@@ -52,7 +52,7 @@
   
 
 
-		    navigator.getUserMedia({
+		    navigator.getUserMedia(
 				options, onSuccess, onError);
 
 		    function onSuccess(stream) {
@@ -60,8 +60,14 @@
 		        console.log("getUserMedia succeed");
 
 		        var video = document.getElementById('webcam');
-		        video.setAttribute('width', window.innerWidth);
-		        video.setAttribute('height', window.innerHeight);
+                video.setAttribute('width', '100%');	
+                video.setAttribute('height', '100%');
+                document.body.appendChild(video);
+                video.style.position = 'absolute';
+                video.style.top = '-999em';
+                video.style.left = '-999em';
+                video.style.height = '100%';
+                video.style.width = '100%';
 
 		        if (window.URL) {
 		            video.src = window.URL.createObjectURL(stream);

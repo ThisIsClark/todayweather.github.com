@@ -1,89 +1,70 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>WebRTC 0514</title>
-    <script src="//cdn.bootcss.com/eruda/1.2.0/eruda.min.js"></script>
-    <script>
-     window.onload = function(){
-       var el = document.createElement('div');
-       document.body.appendChild(el);
+<head>
+  <title>AR</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+  <meta charset="utf-8"/>
+  <style type="text/css">
+  * {
+  	margin: 0;
+  	padding: 0;
+  }
+  img,div {
+    position: absolute;
+  }
+  div#state_bar {
+    background: brown;
+    width: 100%;
+    height: 8%;
+    margin: 0;
+  }
+  img#frame {
+    width: 100%;
+    height: 100%;
+  }
+  img#map {
+    width:35.5%;
+    top:0;
+    right: 0;
+  }
+  img#guide {
+    width: 16.6%;
+    right: 3%;
+    bottom: 2%;
+  }
+  img#text_back {
+    width: 69.6%;
+    left: 7%;
+    bottom: 2.5%;
+  }
+  img#focus {
+    left: 48%;
+    bottom: 50%;
+  }
 
-       eruda.init({
-         container: el,
-       });
-     }
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#cf3a3f">
-    <meta charset="utf-8">
+  #container {
+  	position: absolute;
+  	left: 0;
+  	top: 0;
+  	bottom: 0;
+  	right: 0;
+  	overflow: hidden;
+  }
+  </style>
+</head>
+<body>
+	<div id="container"></div>
+	<script type="text/javascript" src="lib/awe-loader-min.js"></script>
+	<script type="text/javascript" src="lib/underscore-min.js"></script>
+	<script type="text/javascript" src="arcontroller.js"></script>
+  <div id="state_bar">
+    
+  </div>
+  <img id="frame" src="img/main/frame.png"/>
+  <img id="map" src="img/main/map_frame.png"/>
+  <img id="guide" src="img/main/guide.png" />
+  <img id="text_back" src="img/main/text_frame.png" />
+  <img id="focus" src="img/main/focus.png">
 
-    <script type="text/javascript" charset="utf-8">
-
-		function startWebcam() {
-		    console.log("Button Clicked");
-			navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-    		window.URL = window.URL || window.webkitURL;
-			
-			if (!navigator.getUserMedia) {
-			    console.log("return");
-			    return;
-			}
-			
-            var options = {
-              video: true
-            };
-			MediaStreamTrack.getSources(function(source_infos) {
-				var selected_source = null;
-				for (var i = 0; i != source_infos.length; ++i) {
-					var source_info = source_infos[i];
-					if (source_info.kind === 'video') {
-					  if (!selected_source || (source_info.facing && source_info.facing == "environment")) {
-					    selected_source = source_info.id;
-					  }
-					}
-				}
-				console.log("selected_source " + selected_source)
-	            if (selected_source) {
-	              options.video = {
-	                optional: [{ facingMode: "environment" }, {sourceId: selected_source}]
-	              };
-	            }
-            });
-
-		    navigator.getUserMedia(
-				options, onSuccess, onError);
-
-		    function onSuccess(stream) {
-
-		        console.log("getUserMedia succeed");
-
-		        //var video = document.getElementById('webcam');
-                video = document.createElement('video');
-                video.setAttribute('autoplay', true);
-                video.setAttribute('width',  document.body.clientWidth);	
-                video.setAttribute('height',  document.body.clientHeight);
-                document.body.appendChild(video);
-                /*
-                video.style.position = 'absolute';
-                video.style.top = '-999em';
-                video.style.left = '-999em';
-                video.style.height = '100%';
-                video.style.width = '100%';				
-		        */
-		        if (window.URL) {
-		            video.src = window.URL.createObjectURL(stream);
-		        } else {
-		            video.src = stream;
-		        }
-		        video.play();
-		    }
-
-		    function onError(error) {
-	    		console.log("error is " + error);
-		    }
-		}
-    </script>
-  </head>
-  <body onload="startWebcam()">
-  </body>
+</body>
 </html>

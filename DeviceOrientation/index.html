@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="js/common/jquery.min.js"></script>
     <script src="js/common/eventutil.js"></script>
+    <script type='text/javascript'>
+        document.querySelector('body').addEventListener('touchstart', function (ev) {
+            event.preventDefault();
+    });
+</script>
 </head>
 <body>
     <div id="arrow"></div>

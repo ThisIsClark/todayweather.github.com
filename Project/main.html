@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>“宜居水岸” - AR应用1</title>
+	<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+		}
+		img,div {
+		position: absolute;
+		}
+		div#state_bar {
+		background: brown;
+		width: 100%;
+		height: 8%;
+		margin: 0;
+		}
+		img#frame {
+		width: 100%;
+		height: 100%;
+		}
+		img#map {
+		width:35.5%;
+		top:0;
+		right: 0;
+		}
+		img#guide {
+		width: 16.6%;
+		right: 3%;
+		bottom: 2%;
+		}
+		img#text_back {
+		width: 69.6%;
+		left: 7%;
+		bottom: 2.5%;
+		}
+		img#focus {
+		left: 48%;
+		bottom: 50%;
+		}
+		#container {
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom: 0;
+			right: 0;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body style="overflow: hidden;position: fixed;width: 100%;height: 100%;margin: 0;">
+<div id="container"></div>
+<script type="text/javascript" src="js/awe-loader-min.js"></script>
+<script type="text/javascript">
+  window.addEventListener('load', function() {
+    // initialize awe after page loads
+    window.awe.init({
+      // automatically detect the device type
+      device_type: awe.AUTO_DETECT_DEVICE_TYPE,
+      // populate some default settings
+      settings: {
+      	container_id: 'container',
+        fps: 30,
+        default_camera_position: { x:0, y:0, z:0 },
+        default_lights:[
+          {
+            id: 'point_light',
+            type: 'point',
+            color: 0xFFFFFF
+          },
+        ],
+      },
+      ready: function() {
+        // load js files based on capability detection then setup the scene if successful
+        awe.util.require([
+          {
+            capabilities: ['gum','gyro','webgl'],
+            files: [ 
+              [ 'js/awe-standard-dependencies.js', 'js/awe-standard.js' ], // core dependencies for this app 
+              'js/awe-standard-window_resized.js', // window resize handling plugin
+              'js/awe-standard-object_clicked.js', // object click/tap handling plugin
+              'js/awe.geo_ar.js', // geo ar plugin
+            ],
+            success: function() { 
+              // limit demo to supported devices
+              // NOTE: only Chrome and Firefox has implemented the DeviceOrientation API in a workable way
+              //       so for now we are excluding all others to make sure your first experience is a happy one
+              var device_type = awe.device_type();
+              var browser_unsupported = false;
+              if (device_type != 'android') {
+                browser_unsupported = true;
+              } else if (!navigator.userAgent.match(/chrome|firefox/i)) {
+                browser_unsupported = true;
+              }
+              if (browser_unsupported) {
+                document.body.innerHTML = '<p>This demo currently requires a standards compliant Android browser (e.g. Chrome M33).</p>';
+                return;
+              }
+
+              // setup and paint the scene
+			        window.awe.setup_scene();
+			              
+			        // add some points of interest (poi) for each of the compass points
+			        awe.pois.add({ id:'north', position: { x:0, y:0, z:-200 } });
+			
+			        // add projections to each of the pois
+              awe.projections.add({ 
+			          id:'n', 
+			          geometry:{ shape:'sphere', radius:10 },
+                material:{ 
+			            type: 'phong',
+			            color:0xCCCCCC, 
+			          },
+                position: {x: 0, y: 0, z: 0},
+              }, { poi_id: 'north' });
+            },
+          },
+          { // else create a fallback
+            capabilities: [],
+            files: [],
+            success: function() { 
+              document.body.innerHTML = '<p>This demo currently requires a standards compliant mobile browser (e.g. Firefox on Android). NOTE: iOS does not currently support WebGL or WebRTC and has not implemented the DeviceOrientation API correctly. Please see <a href="http://lists.w3.org/Archives/Public/public-geolocation/2014Jan/0000.html">this post to the W3C GeoLocation Working Group</a> for more detailed information.</p>';
+              return;
+            },
+          },
+        ]);
+      }
+    });
+  });
+</script>
+
+	<div id="state_bar">
+		
+	</div>
+	<img id="frame" src="img/main/frame.png"/>
+	<img id="map" src="img/main/map_frame.png"/>
+	<img id="guide" src="img/main/guide.png" />
+	<img id="text_back" src="img/main/text_frame.png" />
+	<img id="focus" src="img/main/focus.png">
+</body>
+</html>

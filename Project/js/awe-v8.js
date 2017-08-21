@@ -1,4 +1,5 @@
 // BEGIN FILE:  awe_v8.js
+// See: https://github.com/buildar/awe.js/blob/master/awe_v8.js
 /*
 
   The MIT License
@@ -34,7 +35,7 @@
 
 
   Why is it called awe_v8?
-  -----------------------
+  ------------------------
 
     Each datastore by default is designed to support a standard set of "8 verbs".
 
@@ -375,12 +376,12 @@ function awe_v8() {
           else if (BODY !== undefined && BODY.exact !== undefined) {
             var a = undefined;
             var b = undefined;
-            var match = 0;
+            var match = 1;
             for (var m in BODY.exact) {
               a = data_array[i][m];
               b = BODY.exact[m];
-              if (a == b) {
-                match = 1;
+              if (a != b) {
+                match = 0;
               }
             }
             if (match) {
@@ -390,15 +391,27 @@ function awe_v8() {
           else {
             var match = 1;
             for (var m in BODY) {
+              
               if (data_array[i][m] !== undefined && typeof(data_array[i][m]) == "string") {
                 a = data_array[i][m].toLowerCase();
+              }
+              else if (typeof(data_array[i][m]) == "number") {
+                a = data_array[i][m];
               }
               if (BODY[m] !== undefined && typeof(BODY[m]) == "string") {
                 b = BODY[m].toLowerCase();
               }
-              if (a !== undefined && b !== undefined) {
+              else if (typeof(BODY[m]) == "number") {
+                b = BODY[m];
+              }
+              if (typeof(a) == 'string' && typeof(b) == 'string') {
                 var r = a.match(b);
                 if (r == undefined) { 
+                  match = 0;
+                }
+              }
+              else if (typeof(a) == 'number' && typeof(b) == 'number') {
+                if (a != b) {
                   match = 0;
                 }
               }
@@ -520,7 +533,7 @@ function awe_v8() {
         output_format = HEAD.output_format;
       }
       try {
-        if (typeof(BODY) == "string" && data[BODY] !== undefined) {
+        if ((typeof(BODY) == "string" || typeof(BODY) == "number") && data[BODY] !== undefined) {
           return data[BODY].hasOwnProperty('value') ? data[BODY].value : data[BODY];
         }
         else if (BODY !== undefined && BODY.id !== undefined && data[BODY.id]) {
@@ -552,13 +565,6 @@ function awe_v8() {
         output_format = HEAD.output_format;
       }
       try {
-        if (BODY == undefined) {
-          errors.BODY = {
-            code: 500,
-            message: "missing BODY object", 
-          };
-          throw "missing BODY object";
-        }
         if (BODY.data == undefined) {
           errors.BODY.data = {
             code: 500,
@@ -574,23 +580,44 @@ function awe_v8() {
           throw "missing 'where' clause in BODY object";
         }
         if (BODY.where[ID_FIELD] !== undefined) {
+          if (!Array.isArray(BODY.where[ID_FIELD])) {
+            BODY.where[ID_FIELD] = [BODY.where[ID_FIELD]];
+          }
+          var idsLength = BODY.where[ID_FIELD].length;
+
           if (HEAD.strict) {
-            if (data[BODY.where[ID_FIELD]] == undefined) {
-              errors.BODY[BODY.where[ID_FIELD]] = {
-                code: 500,
-                message: ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD]+")", 
-              };
-              throw ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD]+")";
+            for (var j = 0; j < idsLength; j++) {
+              if (data[BODY.where[ID_FIELD][j]] == undefined) {
+                errors.BODY[BODY.where[ID_FIELD][j]] = {
+                  code: 500,
+                  message: ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD][j]+")", 
+                };
+                throw ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD][j]+")";
+              }
             }
           }
+          
           for (var i in BODY.data) {
             if (i != ID_FIELD) {
-              if (!data[BODY.where[ID_FIELD]]) {
-                data[BODY.where[ID_FIELD]] = {};
-                data[BODY.where[ID_FIELD]][ID_FIELD] = BODY.where[ID_FIELD];
+              for (var j = 0; j < idsLength; j++) {
+                if (data[BODY.where[ID_FIELD][j]] == undefined) {
+                  // no such item!
+                  console.warn('no such item to update!', BODY.where[ID_FIELD][j]);
+                  // continue
+                  var newBODY = {};
+                  newBODY[i] = BODY.data[i];
+                  newBODY[ID_FIELD] = BODY.where[ID_FIELD][j];
+                  this.add(newBODY, HEAD);
+                }
+                // use the setter if available
+                if (data[BODY.where[ID_FIELD][j]]._set_data_value && typeof (data[BODY.where[ID_FIELD][j]]._set_data_value) == 'function') {
+                  data[BODY.where[ID_FIELD][j]]._set_data_value(i, BODY.data[i]);
+                }
+                else {
+                  data[BODY.where[ID_FIELD][j]][i] = BODY.data[i];
+                }
+                return_values.push(i);
               }
-              data[BODY.where[ID_FIELD]][i] = BODY.data[i];
-              return_values.push(i);
             }
           }
         }
@@ -616,35 +643,41 @@ function awe_v8() {
       var return_flag = true;
       var errors = { HEAD:{}, BODY:{} };
       var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
+      if (HEAD.output_format !== undefined) {
         output_format = HEAD.output_format;
       }
       try {
-        if (BODY !== undefined && typeof(BODY.id) == "string" || typeof(BODY.id) == "number") {
-          if (BODY !== undefined && data[BODY.id] !== undefined) {
-            delete(data[BODY.id]);
-            return_values.push(BODY.id);
+        
+        if (typeof BODY == 'string' || typeof BODY == 'number') {
+          var t = {};
+          t[ID_FIELD] = BODY;
+          BODY = t;
+        }
+        if (typeof(BODY[ID_FIELD]) == "string" || typeof(BODY[ID_FIELD]) == "number") {
+          if (BODY !== undefined && data[BODY[ID_FIELD]] !== undefined) {
+            delete(data[BODY[ID_FIELD]]);
+            return_values.push(BODY[ID_FIELD]);
           }
           else {
-            errors.BODY.id = {
+            errors.BODY[ID_FIELD] = {
               code: 500,
-              message: BODY.id+" does not exist", 
+              message: BODY[ID_FIELD]+" does not exist", 
             };
-            throw BODY.id+" does not exist";
+            throw BODY[ID_FIELD]+" does not exist";
           }
         }
         else {
-          for (var id in BODY.id) {
-            if (BODY.id[id] !== undefined && data[BODY.id[id]] !== undefined) {
-              delete(data[BODY.id[id]]);
-              return_values.push(BODY.id[id]);
+          for (var id in BODY[ID_FIELD]) {
+            if (BODY[ID_FIELD][id] !== undefined && data[BODY[ID_FIELD][id]] !== undefined) {
+              delete(data[BODY[ID_FIELD][id]]);
+              return_values.push(BODY[ID_FIELD][id]);
             }
             else {
-              errors.BODY[BODY.id[id]] = {
+              errors.BODY[BODY[ID_FIELD][id]] = {
                 code: 500,
-                message: BODY.id[id]+" does not exist" 
+                message: BODY[ID_FIELD][id]+" does not exist" 
               };
-              throw BODY.id[id]+" does not exist";
+              throw BODY[ID_FIELD][id]+" does not exist";
             }
           }
         }

@@ -1,740 +1,4 @@
-// BEGIN FILE:  awe_v8.js
-// See: https://github.com/buildar/awe.js/blob/master/awe_v8.js
-/*
 
-  The MIT License
-
-  Copyright (c) 2013 Rob Manson, http://buildAR.com. All rights reserved.
-
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"), to deal
-  in the Software without restriction, including without limitation the rights
-  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  copies of the Software, and to permit persons to whom the Software is
-  furnished to do so, subject to the following conditions:
-
-  The above copyright notice and this permission notice shall be included in
-  all copies or substantial portions of the Software.
-
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  THE SOFTWARE.
-
-
-  What is awe_v8.js?
-  ------------------
-
-    It's a simple datastore template that makes it easy to store, manage and
-    extend collections of javascript object in a consistent way. 
-
-    Trust me, it's funkier than that sounds! 8)
-
-
-  Why is it called awe_v8?
-  ------------------------
-
-    Each datastore by default is designed to support a standard set of "8 verbs".
-
-    - search
-    - list
-    - add
-    - view
-    - edit
-    - update
-    - delete
-    - report
-
-    Through the magical process of simplification this translates in a subset of
-    "6 implemented methods".
-
-    - list
-    - add
-    - view
-    - update
-    - delete
-    - report
-
-    search and edit are simply UIs that drive one of these 6 methods.
-
-      e.g. edit -> update or search -> list
-
-
-  How are errors handled?
-  -----------------------
-
-    In simple js mode a method call either returns undefined for an error or
-    either an object or an array of 0 or more objects.
-
-
-  How do you use awe_v8? 
-  ----------------------
-
-  // create a awe_v8 datastore
-  var my_datastore = new awe_v8();
-
-  // add one object to your datastore
-  console.log("add an object (return new id)");
-  my_datastore.add({
-    id: "test",
-    some_data: "blah"
-  });
-
-  // add multiple objects to your datastore in one go
-  console.log("add several objects (return new ids)");
-  my_datastore.add([
-    {
-      id: "test2",
-      some_data: "blahdeblah"
-    },
-    {
-      new_param: 99, 
-      id: "test3",
-      some_data: "hrmok"
-    },
-  ]);
-
-  // list all objects currently in your datastore
-  console.log("list all objects (return all objects)");
-  my_datastore.list(); 
-
-  // list all objects in SOAPjr format (see separate documentation for SOAPjr API)
-  console.log("list all objects (return all objects in SOAPjr)");
-  my_datastore.list({}, { output_format:"soapjr" }); 
-
-  // view one object
-  console.log("view an object (return one object)");
-  my_datastore.view("test"); // simple
-  my_datastore.view({ id: "test" }); // clear
-  my_datastore.view({ id: "test" }, { output_format:"js" }); // explicit
-
-  // update one object
-  console.log("update an object (return updated fields)");
-  my_datastore.update({
-    data: {
-      new_param: 34, 
-      some_data: "new_data",
-    }, 
-    where: {
-      id: "test",
-    }
-  });
-
-  // search for objects that fuzzy match a pattern
-  console.log("list fuzzy matches (return roughly matching objects)");
-  my_datastore.list({ id: "test" }, { limit: 10 }); 
-
-  // search for objects that exactly match a pattern
-  console.log("list exact matches (return exactly matching objects)");
-  my_datastore.list({ exact: { id: "test2" } }); 
-
-  // delete one object
-  console.log("delete an object (return deleted ids)");
-  my_datastore.delete({ id: "test2" }); 
-
-  // report metadata about this datastore
-  console.log("report overview info (return a summary)");
-  my_datastore.report();
-
-*/
-
-// override this to customise how you want your awe_v8 template to behave
-var V8_CONFIG = {
-  default_id_field: "id",
-  default_output_format: "js",
-  debug: false,
-};
-
-// below here is the template awe_v8 object implementation
-function awe_v8() {
-  var ID_FIELD = "id";
-  try {
-    if (V8_CONFIG.default_id_field !== undefined) {
-      ID_FIELD = V8_CONFIG.default_id_field;
-    }
-  }
-  catch(e) { /* TODO */ }
-  var OUTPUT_FORMAT = "js";
-  try {
-    if (V8_CONFIG.default_output_format !== undefined) {
-      OUTPUT_FORMAT = V8_CONFIG.default_output_format;
-    }
-  }
-  catch(e) { /* TODO */ }
-  var awe_v8_object = new awe_v8_template();
-  var _return = function(return_flag, return_values, errors, output_format) {
-    if (output_format === undefined) {
-      output_format = OUTPUT_FORMAT;
-    }
-    if (output_format == "soapjr") {
-      var return_object = {
-        HEAD: {},
-        BODY: []
-      };
-      if (return_flag) {
-        if (typeof(return_values) === "object" && return_values.length !== undefined) {
-          return_object.BODY = return_values;
-        }
-        else {
-          return_object.BODY = [return_values];
-        }
-        return_object.HEAD.result = 1;
-        return return_object;
-      }
-      else {
-        return_object.HEAD.result = 0;
-        if (errors !== undefined && Object.keys(errors).length) {
-          for (var i in errors) {
-            if (Object.keys(errors[i]).length) {
-              
-              return_object.HEAD.errors[i] = errors[i];
-            }
-          }
-        }
-        return return_object;
-      }
-    }
-    else {
-      if (return_flag) {
-        return return_values;
-      }
-      else {
-        return undefined;
-      }
-    }
-  };
-  function _add(data, io, errors) {
-    if (io == undefined) {
-      throw "io undefined";
-    }
-    if (data[io[ID_FIELD]] !== undefined) {
-      errors.BODY[ID_FIELD] = {
-        code: 500,
-        message: ID_FIELD+" already exists ("+io[ID_FIELD]+")", 
-      };
-      throw ID_FIELD+" already exists ("+io[ID_FIELD]+")";
-    }
-    else {
-      data[io[ID_FIELD]] = io;
-      return io[ID_FIELD];
-    }
-  };
-  function awe_v8_template() { 
-    var data = {};
-    if (V8_CONFIG.debug !== undefined) {
-      this.debug = V8_CONFIG.debug;
-    }
-    else {
-      this.debug = false;
-    }
-    if (V8_CONFIG.debug_verbose !== undefined) {
-      this.debug_verbose = V8_CONFIG.debug;
-    }
-    else {
-      this.debug_verbose = 0;
-    }
-    this.get_data = function(){
-      return data;
-    }
-    
-    this.constructor.prototype.list = function(BODY, HEAD){
-      if (BODY === undefined) { BODY = {}; }
-      if (HEAD === undefined) { HEAD = {}; }
-      var return_values = [];
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
-        output_format = HEAD.output_format;
-      }
-      try {
-        var page = 0;
-        var limit = undefined;
-        var order_by = ID_FIELD;
-        var order_type = "alphabetic";
-        var order_direction = "asc";
-        var data_array = [];  
-        for (var i in data) {
-          data_array.push(data[i]);
-        }
-        if (HEAD !== undefined) {
-          if (HEAD.page !== undefined && typeof(HEAD.page) == "number") {
-            page = HEAD.page-1;
-          }
-          if (HEAD.limit !== undefined && typeof(HEAD.limit) == "number") {
-            limit = HEAD.limit;
-          }
-          if (HEAD.order_by !== undefined && typeof(HEAD.order_by) == "string") {
-            order_by = HEAD.order_by;
-          }
-          if (HEAD.order_type !== undefined && HEAD.order_type == "numeric") {
-            order_type = "numeric";
-          }
-          if (HEAD.order_direction !== undefined && HEAD.order_direction == "desc") {
-            order_direction = "desc";
-          }
-        }
-        var sort_function = function(A, B) {
-          var a = undefined;
-          var b = undefined;
-          if (order_type == "alphabetic") {
-            if (A[order_by] !== undefined && typeof(A[order_by]) == "string") {
-              a = A[order_by].toLowerCase();
-            }
-            if (B[order_by] !== undefined && typeof(B[order_by]) == "string") {
-              b = B[order_by].toLowerCase();
-            }
-            if (order_direction == "asc") {
-              if (a == undefined && b !== undefined) {
-                return 0;
-              }
-              else if (a == undefined) {
-                return 1;
-              }
-              else if (b == undefined) {
-                return -1
-              }
-              else {
-                if (a < b) {
-                  return -1;
-                }
-                else if (a > b) {
-                  return 1;
-                }
-                else {
-                  return 0;
-                }
-              }
-            }
-            else {
-              if (a == undefined && b !== undefined) {
-                return 0;
-              }
-              else if (a == undefined) {
-                return -1;
-              }
-              else if (b == undefined) {
-                return 1
-              }
-              else {
-                if (a > b) {
-                  return -1;
-                }
-                else if (a < b) {
-                  return 1;
-                }
-                else {
-                  return 0;
-                }
-              }
-            }
-          }
-          else {
-            if (A[order_by] !== undefined && typeof(A[order_by]) == "number") {
-              a = A[order_by];
-            } 
-            if (B[order_by] !== undefined && typeof(B[order_by]) == "number") {
-              b = B[order_by];
-            } 
-            if (order_direction == "asc") {
-              if (a == undefined && b == undefined) {
-                return 0
-              }
-              else if (a == undefined) {
-                return 1;
-              }
-              else if (b == undefined) {
-                return -1;
-              }
-              else {
-                return a-b; 
-              }
-            }
-            else {
-              if (a == undefined && b == undefined) {
-                return 0
-              }
-              else if (a == undefined) {
-                return 1;
-              }
-              else if (b == undefined) {
-                return -1;
-              }
-              else {
-                return b-a; 
-              }
-            }
-          }
-        };
-        for (var i in data_array) {
-          if (BODY == undefined || BODY.length == 0) {
-            return_values.push(data_array[i]);
-          }
-          else if (BODY !== undefined && BODY.exact !== undefined) {
-            var a = undefined;
-            var b = undefined;
-            var match = 0;
-            for (var m in BODY.exact) {
-              a = data_array[i][m];
-              b = BODY.exact[m];
-              if (a == b) {
-                match = 1;
-              }
-            }
-            if (match) {
-              return_values.push(data_array[i]);
-            }
-          }
-          else {
-            var match = 1;
-            for (var m in BODY) {
-              if (data_array[i][m] !== undefined && typeof(data_array[i][m]) == "string") {
-                a = data_array[i][m].toLowerCase();
-              }
-              if (BODY[m] !== undefined && typeof(BODY[m]) == "string") {
-                b = BODY[m].toLowerCase();
-              }
-              if (a !== undefined && b !== undefined) {
-                var r = a.match(b);
-                if (r == undefined) { 
-                  match = 0;
-                }
-              }
-              else {
-                match = 0;
-              }
-            }
-            if (match) {
-              return_values.push(data_array[i]);
-            }
-          }
-        }
-        return_values = return_values.sort(sort_function);
-        if (limit !== undefined) {
-          var start = limit*page;
-          var end = limit*(page+1);
-          return_values = return_values.slice(start,end);
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      /* NOTE: commented out to make it more forgiving - maybe move to config
-      if (!(return_values.length > 0)) {
-        return_flag = false;
-        errors.BODY.io = {
-          code: 500,
-          message: "object does not exist",
-        };
-      }
-      */
-      return _return(return_flag, return_values, errors, output_format);
-    };
-
-    this.constructor.prototype.add = function(BODY, HEAD) {
-      if (BODY == undefined) { BODY = {}; }
-      if (HEAD == undefined) { HEAD = {}; }
-      var return_values = [];
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined) {
-        if (HEAD.output_format !== undefined) {
-          output_format = HEAD.output_format;
-        }
-        if (HEAD.replace_all !== undefined && HEAD.replace_all) {
-          data = {};
-        }
-      }
-      try {
-        /* NOTE: commented out to make it more forgiving - maybe move to config
-        if (BODY == undefined) {
-          errors.BODY = {
-            code: 500,
-            message: "BODY object invalid (undefined)",
-          };
-          throw "BODY object invalid (undefined)";
-        }
-        */
-        if (typeof(BODY) == "string") {
-          errors.BODY = {
-            code: 500,
-            message: "BODY object invalid (string)",
-          };
-          throw "BODY object invalid (string)";
-        }
-        if (typeof(BODY) == "number") {
-          errors.BODY = {
-            code: 500,
-            message: "BODY object invalid (number)",
-          };
-          throw "BODY object invalid (number)";
-        }
-        if ((Array.isArray && Array.isArray(BODY)) || (BODY[ID_FIELD] == undefined && BODY.length > 0)) {
-          for (var i in BODY) {
-            var a = _add(data, BODY[i], errors);
-            if (a) {
-              return_values.push(a); // if this fails will it still push something? yes, undefined
-            }
-            else {
-              throw "add failed";
-            }
-          }
-        }
-        else {
-          var a = _add(data, BODY, errors)
-          if (a) {
-              return_values.push(a); // if this fails will it still push something? yes, undefined
-          }
-          else {
-            throw "add failed";
-          }
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      if (return_values.length == 0) {
-        return _return(return_flag, {}, errors, output_format);
-      }
-      else if (return_values.length == 1) {
-        return _return(return_flag, { id: return_values[0] }, errors, output_format);
-      }
-      else {
-        return _return(return_flag, { id: return_values }, errors, output_format);
-      }
-    };
-
-    this.constructor.prototype.view = function(BODY, HEAD) {
-      if (BODY == undefined) { BODY = {}; }
-      if (HEAD == undefined) { HEAD = {}; }
-      var return_value = undefined;
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
-        output_format = HEAD.output_format;
-      }
-      try {
-        if (typeof(BODY) == "string" && data[BODY] !== undefined) {
-          return data[BODY].hasOwnProperty('value') ? data[BODY].value : data[BODY];
-        }
-        else if (BODY !== undefined && BODY.id !== undefined && data[BODY.id]) {
-          return_value = data[BODY.id].hasOwnProperty('value') ? data[BODY.id].value : data[BODY.id];
-        }
-        else {
-          errors.BODY.id = {
-            code: 500,
-            message: BODY.id+" does not exist", 
-          };
-          throw BODY.id+" does not exist";
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      return _return(return_flag, return_value, errors);
-    };
-
-    this.constructor.prototype.update = function(BODY, HEAD) {
-      if (BODY == undefined) { BODY = {}; }
-      if (HEAD == undefined) { HEAD = {}; }
-      var return_values = HEAD.fields_updated || [];
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
-        output_format = HEAD.output_format;
-      }
-      try {
-        if (BODY == undefined) {
-          errors.BODY = {
-            code: 500,
-            message: "missing BODY object", 
-          };
-          throw "missing BODY object";
-        }
-        if (BODY.data == undefined) {
-          errors.BODY.data = {
-            code: 500,
-            message: "missing 'data' clause in BODY object", 
-          };
-          throw "missing 'data' clause in BODY object";
-        }
-        if (BODY.where == undefined) {
-          errors.BODY.where = {
-            code: 500,
-            message: "missing 'where' clause in BODY object", 
-          };
-          throw "missing 'where' clause in BODY object";
-        }
-        if (BODY.where[ID_FIELD] !== undefined) {
-          if (HEAD.strict) {
-            if (data[BODY.where[ID_FIELD]] == undefined) {
-              errors.BODY[BODY.where[ID_FIELD]] = {
-                code: 500,
-                message: ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD]+")", 
-              };
-              throw ID_FIELD+" doesn't exist ("+BODY.where[ID_FIELD]+")";
-            }
-          }
-          for (var i in BODY.data) {
-            if (i != ID_FIELD) {
-              if (!data[BODY.where[ID_FIELD]]) {
-                data[BODY.where[ID_FIELD]] = {};
-                data[BODY.where[ID_FIELD]][ID_FIELD] = BODY.where[ID_FIELD];
-              }
-              data[BODY.where[ID_FIELD]][i] = BODY.data[i];
-              return_values.push(i);
-            }
-          }
-        }
-        else {
-          errors.BODY.where = {
-            code: 500,
-            message: "where."+ID_FIELD+" required", 
-          };
-          throw "where."+ID_FIELD+" required";
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      return _return(return_flag, { fields_updated: return_values }, errors, output_format);
-    };
-
-    this.constructor.prototype.delete = function(BODY, HEAD) {
-      if (BODY == undefined) { BODY = {}; }
-      if (HEAD == undefined) { HEAD = {}; }
-      var return_values = [];
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
-        output_format = HEAD.output_format;
-      }
-      try {
-        if (BODY !== undefined && typeof(BODY.id) == "string" || typeof(BODY.id) == "number") {
-          if (BODY !== undefined && data[BODY.id] !== undefined) {
-            delete(data[BODY.id]);
-            return_values.push(BODY.id);
-          }
-          else {
-            errors.BODY.id = {
-              code: 500,
-              message: BODY.id+" does not exist", 
-            };
-            throw BODY.id+" does not exist";
-          }
-        }
-        else {
-          for (var id in BODY.id) {
-            if (BODY.id[id] !== undefined && data[BODY.id[id]] !== undefined) {
-              delete(data[BODY.id[id]]);
-              return_values.push(BODY.id[id]);
-            }
-            else {
-              errors.BODY[BODY.id[id]] = {
-                code: 500,
-                message: BODY.id[id]+" does not exist" 
-              };
-              throw BODY.id[id]+" does not exist";
-            }
-          }
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      if (return_values.length == 0) {
-        return _return(return_flag, {}, errors, output_format);
-      }
-      else if (return_values.length == 1) {
-        return _return(return_flag, { id: return_values[0] }, errors, output_format);
-      }
-      else {
-        return _return(return_flag, { id: return_values }, errors, output_format);
-      }
-    };
-
-    this.constructor.prototype.report = function(BODY, HEAD) {
-      if (BODY == undefined) { BODY = {}; }
-      if (HEAD == undefined) { HEAD = {}; }
-      var return_value = {
-        count: 0,
-        fields: {},
-      };
-      var return_flag = true;
-      var errors = { HEAD:{}, BODY:{} };
-      var output_format = undefined;
-      if (HEAD !== undefined && HEAD.output_format !== undefined) {
-        output_format = HEAD.output_format;
-      }
-      try {
-        if (data == undefined) {
-          errors.HEAD.data = {
-            code: 500,
-            message: "internal data invalid" 
-          };
-          throw "internal data invalid";
-        }
-        for (var i in data) {
-          for (var k in data[i]) {
-            if (return_value.fields[k] == undefined) {
-              return_value.fields[k] = 1;
-            }
-            else {
-              return_value.fields[k]++;
-            }
-          }
-          return_value.count++;
-        }
-      }
-      catch(e) {
-        this.error_handler(e);
-        return_flag = false;
-      }
-      return _return(return_flag, return_value, errors, output_format);
-    };
-
-
-    this.constructor.prototype.error_handler = function(e, debug) {
-      if (debug || this.debug) {
-        if (e.code && e.message) {
-          console.log("ERROR: "+e.code);
-          console.log(e.message);
-        }
-        else {
-          console.log("ERROR");
-          console.log(e);
-        }
-        if (this.debug_verbose > 0) {
-          console.log("CALLER");
-          console.log(arguments.callee.caller);
-        }
-        if (this.debug_verbose > 2) {
-          console.log(arguments.callee.caller.toString());
-        }
-      }
-    };
-    
-    this.constructor.prototype.toString = function() {
-    	return 'awe_v8_object'
-    };
-
-    return this;
-  };
-  return awe_v8_object;
-}
-// END FILE:  awe_v8.js
 
 // BEGIN FILE:  awe-loader.js file
 /*
@@ -764,16 +28,398 @@ function awe_v8() {
 
 */
 
+
 (function(window) {
+  var ID_FIELD = "id";
   var this_awe;
   var _audio_context;
+  
+  
+  function awe_v8_item(data, v8_datastore){
+    
+    var datastore;
+    var data;
+
+    this.setup = function(initial_data){
+      // do we validate fields in any way?
+      data = initial_data; //_clone(initial_data);
+      this[ID_FIELD] = initial_data[ID_FIELD]
+    };
+    this._get_datastore = function(){
+      return datastore;
+    };
+    this._get_data = function(){
+      return data
+    };
+    this._get_data_value = function(key){
+      return data[key];
+    };
+    this._set_data_value = function(key, value){
+      data[key] = value;
+      this._values_updated();
+      return true;
+    };
+    // TBD if we want this
+    this.get_data = function(){
+      return data
+    };
+    
+    try {
+      if (!data) {
+        throw 'Please provide item data';
+      }
+      if (!v8_datastore) {
+        throw 'Please provide a v8_datastore this item belongs to';
+      }
+      if (v8_datastore+'' != 'awe_v8_object') {
+        throw 'Please provide a valid v8_datastore this item belongs to';
+      }
+      datastore = v8_datastore;
+      this.setup(data)
+    }
+    catch(e) {
+      console.error(e);
+    }
+    
+    return this;
+  }
+  
+  awe_v8_item.prototype.constructor = awe_v8_item;
+  awe_v8_item.prototype.toString = function(){
+    var id = this._get_data_value(ID_FIELD)
+    return this.constructor.name+' - '+ID_FIELD+': '+id;
+  }
+  awe_v8_item.prototype.update = function(data){
+    var datastore = this._get_datastore();
+    datastore.update({
+      data: data,
+      where: { id: this[ID_FIELD] }
+    });
+  };
+  awe_v8_item.prototype._values_updated = function(){};
+  
+  // TBD if we keep this
+  awe_v8_item.prototype.private_properties = [ID_FIELD];
+  
+  /// awe base object class
+  function awe_object(data, datastore){
+    awe_v8_item.call(this, data, datastore);
+  }
+  awe_object.prototype = Object.create(awe_v8_item.prototype);
+  awe_object.prototype.constructor = awe_object;
+  awe_object.prototype.toString = function(){
+    var id = this._get_data_value(ID_FIELD)
+    return this.constructor.name+' '+id+': '+this._get_data_value('value');
+  };
+  // value getter & setter
+  awe_object.prototype.value = function(val){
+    if (arguments.length) {
+      this._set_data_value('value', val);
+    }
+    return this._get_data_value('value');
+  };
+  
+  
+  // awe_capability class
+  function awe_capability(data, datastore){
+    awe_object.call(this, data, datastore);
+  }
+  awe_capability.prototype = Object.create(awe_object.prototype);
+  awe_capability.prototype.constructor = awe_capability;
+
+  // awe_setting class
+  function awe_setting(data, datastore){
+    awe_object.call(this, data, datastore);
+  }
+  awe_setting.prototype = Object.create(awe_object.prototype);
+  awe_setting.prototype.constructor = awe_setting;
+  
+
+  // awe_event class
+  function awe_event(data, datastore){
+    data._register = data.register;
+    data._unregister = data.unregister;
+    this.registered = false;
+    awe_object.call(this, data, datastore);
+    this.register();
+  }
+  awe_event.prototype = Object.create(awe_object.prototype);
+  awe_event.prototype.constructor = awe_event;
+  awe_event.prototype.register = function(){
+    if (this.registered) {
+      return;
+    }
+    var device_types = this._get_data_value('device_types');
+    
+    if (!device_types || Object.keys(device_types).length == 0 || device_types[this_awe.device_type()]) {
+      
+      var f = this._get_data_value('_register');
+      var handler = this._get_data_value('handler');
+      if (f && typeof(f) == 'function') {
+        f.call(this, handler);
+        this.registered = true;
+      }
+    }
+  };
+  awe_event.prototype.unregister = function(){
+    if (!this.registered) {
+      return;
+    }
+    var f = this._get_data_value('_unregister');
+    var handler = this._get_data_value('handler');
+    if (f && typeof(f) == 'function') {
+      f.call(this, handler);
+      this.registered = false;
+    }
+  };
+
+  
+  
+  
+  // awe_plugin class
+  function awe_plugin(data, datastore){
+    data._register = data.register;
+    data._unregister = data.unregister;
+    data._enable = data.enable;
+    data._disable = data.disable;
+    awe_object.call(this, data, datastore);
+    this.registered = false;
+    this.enabled = false;
+
+    if (data.api) {
+      // expose the api 
+      var self = this;
+      Object.keys(data.api).forEach(function(key, val){
+        if (typeof data.api[key] == 'function' && !self[key]) {
+          self[key] = data.api[key];
+        }
+      });
+    }
+    if (data.auto_register === undefined || data.auto_register == true) {
+      this.register(data.data);
+    }
+  }
+  awe_plugin.prototype = Object.create(awe_object.prototype);
+  awe_plugin.prototype.constructor = awe_plugin;
+  awe_plugin.prototype.register = function(){
+    if (this.registered) {
+      return;
+    }
+    var f = this._get_data_value('_register');
+    if (f && typeof(f) == 'function') {
+      f.call(this);
+      this.registered = true;
+    }
+  };
+  awe_plugin.prototype.unregister = function(){
+    if (!this.registered) {
+      return;
+    }
+    var f = this._get_data_value('_unregister');
+    if (f && typeof(f) == 'function') {
+      f.call(this);
+      this.registered = false;
+    }
+  };
+  awe_plugin.prototype.enable = function(){
+    if (this.enabled) {
+      return;
+    }
+    var f = this._get_data_value('_enable');
+    if (f && typeof(f) == 'function') {
+      f.call(this);
+      this.enabled = true;
+    }
+  };
+  awe_plugin.prototype.disable = function(){
+    if (!this.enabled) {
+      return;
+    }
+    var f = this._get_data_value('_disable');
+    if (f && typeof(f) == 'function') {
+      f.call(this);
+      this.enabled = false;
+    }
+  };
+  
+  
+  
+  function _verify_view_config(config) {
+    return {
+      pois: config && Array.isArray(config.pois) ? config.pois : [],
+      projections: config && Array.isArray(config.projections) ? config.projections : [],
+      povs: config && Object.prototype.toString.call(config.povs) ? config.povs : {},
+      lights: config && Array.isArray(config.lights) ? config.lights : []
+    };
+  }
+  // awe_view class
+  function awe_view(data, datastore){
+    var self = this;
+    var data_load_handler = data.load_handler;
+    var data_unload_handler = data.unload_handler;
+    
+    delete(data.unload_handler);
+    delete(data.load_handler);
+    
+    var load_handler = function(){
+      self.pre_load_handler.apply(self, arguments);
+      if (data_load_handler && typeof(data_load_handler) == 'function') {
+        data_load_handler.apply(self, arguments);
+      }
+      self.post_load_handler.apply(self, arguments);
+    }
+    var unload_handler = function(){
+      self.pre_unload_handler.apply(self, arguments);
+      if (data_unload_handler && typeof(data_unload_handler) == 'function') {
+        data_unload_handler.apply(self, arguments);
+      }
+      self.post_unload_handler.apply(self, arguments);
+    }
+    data.load_handler = load_handler;
+    data.unload_handler = unload_handler;
+    
+    awe_object.call(this, data, datastore);
+    this.config = _verify_view_config(data.config);
+  }
+  awe_view.prototype = Object.create(awe_object.prototype);
+  awe_view.prototype.constructor = awe_view;
+  // default config structure
+  awe_view.prototype.handler_data = {};
+  awe_view.prototype.config = {
+    
+    pois: [/* $id1, $id2, ... */],           // just ids or full object config ??? 
+    projections: [],    // I'm more towards the IDs-only option 
+    lights: [],         // we can store the scene objects config elsewhere
+    povs: []            // and then either just show poi on view load or add if not in scene yet, but object config exists 
+    
+  }
+  
+  awe_view.prototype.pre_load_handler = function(){
+    console.log('pre_load_handler', this.name)
+  };
+  awe_view.prototype.post_load_handler = function(){
+    console.log('post_load_handler', this.name)
+  };
+  awe_view.prototype.pre_unload_handler = function(){
+    console.log('pre_unload_handler', this.name)
+  };
+  awe_view.prototype.post_unload_handler = function(){
+    console.log('post_unload_handler', this.name)
+  };
+  
+  awe_view.prototype.get_config = function(){
+    return this._get_data_value('config');
+  };
+  awe_view.prototype.get_title = function(){
+    return this._get_data_value('title');
+  };
+  awe_view.prototype.get_handler_data = function(){
+    return this._get_data_value('handler_data');
+  };
+  awe_view.prototype.load = function(){
+    var load_handler = this._get_data_value('load_handler');
+    var config = this.get_config();
+    var self = this;
+    var object_types = ['poi','light','pov','projection'];
+    object_types.forEach(function(type){
+      var all_objects = this_awe[type+'s'].list();
+      var view_objects = Array.isArray(config[type+'s']) ? config[type+'s'] : [];
+      all_objects.forEach(function(object){
+        if (object.update) { 
+          object.update({
+            visible: view_objects.indexOf(object.id) != -1
+          });
+        }
+        else {
+          console.log('not yet an awe object', object)
+        }
+      });
+    });
+    
+    if (load_handler && typeof(load_handler)) {
+      // load_handler needs to be promise-like function
+      return new Promise(function(resolve, reject){
+        load_handler.call(self, resolve, reject);
+      });
+    }
+    // resolve immediately
+    return Promise.resolve();
+  };
+  awe_view.prototype.unload = function(){
+    var self = this;
+    var unload_handler = this._get_data_value('unload_handler');
+    
+    if (unload_handler && typeof(unload_handler) == 'function') {
+      // unload_handler needs to be promise-like function
+      return new Promise(function(resolve, reject){
+        unload_handler.call(self, resolve, reject);
+      });
+    }
+    // resolve immediately
+    return Promise.resolve();
+  };
+
+
+
   if (!window.awe) {
     function awe() {
       var initialized = false;
+      var version = {
+	      awe: '1.0a'
+	     };
 
       this.constructor.prototype.capabilities = new awe_v8();
+      this.constructor.prototype.capabilities._item_constructor = awe_capability;
+      this.constructor.prototype.capabilities.add = function(BODY, HEAD) {
+        if (!BODY) { BODY = {}; }
+        if (!HEAD) { HEAD = {}; }
+        if (!Array.isArray(BODY)) {
+          BODY = [BODY];
+        }
+        var self = this,
+          result = []
+        BODY.forEach(function(item){
+          var s = new awe_capability(item, self);
+          result.push(s);
+        })
+        return this.constructor.prototype.add.call(this, result, HEAD); // super
+      }
+      
+
+      this.constructor.prototype.views = new awe_v8();
+      this.constructor.prototype.views._item_constructor = awe_view;
+      this.constructor.prototype.views.add = function(BODY, HEAD) {
+        if (!BODY) { BODY = {}; }
+        if (!HEAD) { HEAD = {}; }
+        if (!Array.isArray(BODY)) {
+          BODY = [BODY];
+        }
+        var self = this,
+          result = []
+        BODY.forEach(function(item){
+          var s = new awe_view(item, self);
+          s._values_updated();
+          result.push(s);
+        })
+        return this.constructor.prototype.add.call(this, result, HEAD); // super
+      }
 
       this.constructor.prototype.settings = new awe_v8();
+      this.constructor.prototype.settings._item_constructor = awe_setting;
+      this.constructor.prototype.settings.add = function(BODY, HEAD) {
+        if (!BODY) { BODY = {}; }
+        if (!HEAD) { HEAD = {}; }
+        if (!Array.isArray(BODY)) {
+          BODY = [BODY];
+        }
+        var self = this,
+          result = []
+        BODY.forEach(function(item){
+          var s = new awe_setting(item, self);
+          result.push(s);
+        })
+        return this.constructor.prototype.add.call(this, result, HEAD); // super
+      }
       // set default settings
       // NOTE: override this in your code to customize how you want your awe.js app to behave
       
@@ -808,104 +454,87 @@ function awe_v8() {
           id: 'default_lights',
           value: [
             {
-              id: 'spot_light',
-              type: 'spot',
-              color: 0xFFFFFF,
-              intensity: 3,
-              distance: 1000,
-              position: { x:0, y:300, z:100 },
-              target: { x:0, y:0, z:100 },
-              cast_shadow: true,
+              id: 'hemisphere_light',
+              type: 'hemisphere',
+              color: 0xffffff,
             },
           ],
         },
       ]);
 
       this.constructor.prototype.events = new awe_v8();
+      this.constructor.prototype.events._item_constructor = awe_event;
       this.constructor.prototype.events.add = function(BODY, HEAD) {
         if (!BODY) { BODY = {}; }
         if (!HEAD) { HEAD = {}; }
-        try {
-          var result = this.constructor.prototype.add.call(this, BODY, HEAD); // super
-          if (Array.isArray(result.id)) {
-            for (var i in result.id) {
-              var event_handler = this.constructor.prototype.view.call(this, result.id[i]);
-              if (event_handler) {
-                if (!event_handler.device_types || Object.keys(event_handler.device_types).length == 0 || event_handler.device_types[this_awe.device_type()]) {
-                  event_handler.register(event_handler.handler);
-                }
-              }
-            }
-          }
-          else {
-            var event_handler = this.constructor.prototype.view.call(this, result.id);
-            if (!event_handler.device_types || Object.keys(event_handler.device_types).length == 0 || event_handler.device_types[this_awe.device_type()]) {
-              event_handler.register(event_handler.handler);
-            }
-          }
+        if (!Array.isArray(BODY)) {
+          BODY = [BODY];
         }
-        catch(e) {
-          this.error_handler(e);
-        }
-        return result;
+        var self = this,
+          result_body = [];
+        BODY.forEach(function(item){
+          if (!this_awe.events.view(item.id)) {
+            // prevent duplicate runs of register() that cannot be later unregister()ed via events.delete()
+            var s = new awe_event(item, self);
+            result_body.push(s);
+          }
+        });
+        
+        return this.constructor.prototype.add.call(this, result_body, HEAD); // super;
       }
       this.constructor.prototype.events.delete = function(BODY, HEAD) {
         if (!BODY) { BODY = {}; }
         if (!HEAD) { HEAD = {}; }
-        
+        var event;
         if (typeof BODY == 'string' || typeof BODY == 'number') {
-          event_handler = this_awe.events.view(BODY);
           BODY = { id: BODY };
         }
-        else if (BODY.id) {
-          event_handler = this_awe.events.view(BODY.id);
+        if (BODY.id) {
+          event = this_awe.events.view(BODY.id);
         }
-        if (event_handler) {
-          event_handler.unregister(event_handler.handler);
+        if (event) {
+          var handler = event._get_data_value('handler');
+          event.unregister(handler);
         }
         return this.constructor.prototype.delete.call(this, BODY, HEAD); // super
       }
 
-      this.constructor.prototype.pois = new awe_v8();
-
       this.constructor.prototype.plugins = new awe_v8();
+      this.constructor.prototype.plugins._item_constructor = awe_plugin;
       this.constructor.prototype.plugins.add = function(BODY, HEAD) {
         if (!BODY) { BODY = {}; }
-        if (!HEAD) { HEAD = {}; }  
-        try {
-          var result = this.constructor.prototype.add.call(this, BODY, HEAD); // super
-          if (initialized) {
-            if (Array.isArray(result.id)) {
-              for (var i in result.id) {
-                var plugin = this.constructor.prototype.view.call(this, result.id[i]);
-                if (plugin.auto_register === undefined || plugin.auto_register === true) {
-                  plugin.register(plugin.data);
-                }
+        if (!HEAD) { HEAD = {}; }
+        if (!Array.isArray(BODY)) {
+          BODY = [BODY];
+        }
+        var self = this,
+          result_body = [];
+        BODY.forEach(function(item){
+          var supported = true;
+          if (item.capabilities) {
+            var capabilities = _get_capabilities(item.capabilities.join('|'));
+            item.capabilities.forEach(function(c){
+              if (!capabilities[c]) {
+                supported = false;
               }
-            }
-            else {
-              var plugin = this.constructor.prototype.view.call(this, result.id);
-              if (plugin.auto_register === undefined || plugin.auto_register === true) {
-                plugin.register(plugin.data);
-              }
-            }
+            });
           }
-        }
-        catch(e) {
-          this.error_handler(e);
-        }
-        return result;
+          if (supported) {
+            var s = new awe_plugin(item, self);
+            result_body.push(s);
+          }
+        })
+        return this.constructor.prototype.add.call(this, result_body, HEAD); // super
       }
       this.constructor.prototype.plugins.delete = function(BODY, HEAD) {
         if (!BODY) { BODY = {}; }
         if (!HEAD) { HEAD = {}; }
         // tear down plugin
         if (typeof BODY == 'string' || typeof BODY == 'number') {
-          plugin = this_awe.plugins.view(BODY);
           BODY = { id: BODY };
         }
-        else if (BODY.id) {
-          plugin = this_awe.plugins.view(BODY.id);
+        if (BODY.id) {
+          plugin = this.plugins.view(BODY.id);
         }
         if (plugin) {
           plugin.unregister(plugin.data);
@@ -966,16 +595,22 @@ function awe_v8() {
         }
         
         if (this_awe.settings.view('debug')) {
-          this.debug = this_awe.settings.view('debug');
+          this.debug = this_awe.settings.view('debug').value();
         }
         else {
           this.debug = true;
         }
         if (this_awe.settings.view('debug_verbose')) {
-          this.debug_verbose = this_awe.settings.view('debug_verbose');
+          this.debug_verbose = this_awe.settings.view('debug_verbose').value();
         }
         else {
           this.debug_verbose = 1;
+        }
+        if (this_awe.settings.view('capabilities_timeout')) {
+          this.capabilities_timeout = this_awe.settings.view('capabilities_timeout').value();
+        }
+        else {
+          this.capabilities_timeout = 5000;
         }
 
         if (io.device_type !== undefined) {
@@ -1029,7 +664,7 @@ function awe_v8() {
           }
           var event = new CustomEvent('awe_ready');
           window.dispatchEvent(event);
-          if (this_awe.settings.view('auto_start')) {
+          if (this_awe.settings.view('auto_start').value()) {
             this_awe.setup_scene();
           }
           initialized = true;
@@ -1041,17 +676,18 @@ function awe_v8() {
           asynch_count = 3,
           defaults = {
             ajax : false,      // is ajax supported
-            geo : false,      // is geo supported
+            geo : false,       // is geo supported
             lat: undefined,    // only populated once location requested
             lon: undefined,    // only populated once location requested
             gyro : false,      // is orientation supported
             motion : false,    // is motion supported
-            audio : false,    // is web audio supported
+            audio : false,     // is web audio supported
             gum: false,        // is camera/microphone access supported 
             webgl: false,      // is webgl supported
             css3d: false,      // is css3d supported
-            storage : false,  // is local storage supported
-            sockets : false    // are web sockets supported
+            storage : false,   // is local storage supported
+            sockets : false,   // are web sockets supported
+            touch : false      // touch events supported
           };
           
         var finished = function() {
@@ -1082,8 +718,10 @@ function awe_v8() {
         // geo enabled
         if (!!navigator.geolocation) {
           io.geo = true;
-          if (this_awe.settings.view('geo')) {
-            if (this_awe.settings.view('geo.get_location')) {
+          var geo = this_awe.settings.view('geo');
+          var get_location = this_awe.settings.view('geo.get_location');
+          if (geo && geo.value()) {
+            if (get_location && get_location.value()) {
               navigator.geolocation.getCurrentPosition(function(position) {
                 this_awe.capabilities.update({ data: { value: position.coords.latitude }, where: { id: 'lat' } });
                 this_awe.capabilities.update({ data: { value: position.coords.longitude }, where: { id: 'lon' } });
@@ -1091,7 +729,6 @@ function awe_v8() {
             }
           }
         }
-
         // orientation enabled
         if (!!window.DeviceOrientationEvent) {
           var s1 = function(e) {
@@ -1103,13 +740,11 @@ function awe_v8() {
           }
           window.addEventListener('deviceorientation', s1, true);
           // in case event handler never returns - eg. on a pc
-          if (this_awe.device_type() == 'pc') {
-            setTimeout(function() {
-              if (!io.gyro) {
-                finished();
-              }
-            }, 5000);
-          }
+          setTimeout(function() {
+            if (!io.gyro) {
+              finished();
+            }
+          }, this_awe.capabilities_timeout);
         }
         else {
           finished();
@@ -1126,13 +761,11 @@ function awe_v8() {
           }
           window.addEventListener('devicemotion', s2, true);
           // in case event handler never returns - eg. on a pc
-          if (this_awe.device_type() == 'pc') {
-            setTimeout(function() {
-              if (!io.motion) {
-                finished();
-              }
-            }, 5000);
-          }
+          setTimeout(function() {
+            if (!io.motion) {
+              finished();
+            }
+          }, this_awe.capabilities_timeout);
         }
         else {
           finished();
@@ -1184,13 +817,19 @@ function awe_v8() {
           io.sockets = true;
         }
         
+        // touch events
+        if ('ontouchstart' in window) {
+          io.touch = true;
+        }
+
+        
         finished();
       };
 
       this.constructor.prototype.device_type = function() { 
         var device_type;
         try {
-          device_type = this.settings.view('device_type');
+          device_type = this.settings.view('device_type').value();
         }
         catch(e) { /* TODO */ };
         return device_type;
@@ -1198,6 +837,9 @@ function awe_v8() {
 
       this.constructor.prototype.ready = function() {
         return initialized;
+      }
+      this.constructor.prototype.version = function() {
+        return version;
       }
 
       return this;
@@ -1227,7 +869,8 @@ function awe_v8() {
             if (Array.isArray(io[obj].capabilities)) {
               var requirements_valid = true;
               for (var test in io[obj].capabilities) {
-                if (!this_awe.capabilities.view(io[obj].capabilities[test])) {
+                var c = this_awe.capabilities.view(io[obj].capabilities[test])
+                if (!c || !c.value()) {
                   requirements_valid = false;
                 }
               }
@@ -1369,29 +1012,91 @@ function awe_v8() {
     }
     
     var _get_user_media = undefined, 
-      _connect_stream_to_src = function() {};
-    
+      _connect_stream_to_src = function(){},
+      _stream_targets = {},
+      _disconnect_stream = function(){},
+      _get_stream_targets = function(){
+        return _stream_targets;
+      },
+      _random_id = function(){
+        return 'stream-target-'+Date.now();
+      },
+      _disconnect_stream_timeout;
+      
     if (navigator.getUserMedia) { // WebRTC 1.0 standard compliant browser
       _get_user_media = navigator.getUserMedia.bind(navigator);
-      _connect_stream_to_src = function(media_stream, media_element) {
+      _connect_stream_to_src = function(media_stream, media_element, identifier) {
+        
         media_element.srcObject = media_stream;
         media_element.play();
+        if (!identifier) {
+          media_element.setAttribute('data-source-id', '_system');
+        }
+        else {
+          media_element.setAttribute('data-source-id', identifier);
+          _stream_targets[identifier] = {source: media_stream, target: media_element};
+        }
       };
     }
     else if (navigator.mozGetUserMedia) { // early firefox webrtc implementation
       _get_user_media = navigator.mozGetUserMedia.bind(navigator);
-      _connect_stream_to_src = function(media_stream, media_element) {
+      _connect_stream_to_src = function(media_stream, media_element, identifier) {
+      
         media_element.mozSrcObject = media_stream;
         media_element.play();
+        if (!identifier) {
+          media_element.setAttribute('data-source-id', '_system');
+        }
+        else {
+          media_element.setAttribute('data-source-id', identifier);
+          _stream_targets[identifier] = {source: media_stream, target: media_element};
+        }
       };
     }
     else if (navigator.webkitGetUserMedia) { // early webkit webrtc implementation
       _get_user_media = navigator.webkitGetUserMedia.bind(navigator);
-      _connect_stream_to_src = function(media_stream, media_element) {
-        media_element.src = webkitURL.createObjectURL(media_stream);
-        media_element.play();
+      _connect_stream_to_src = function(media_stream, media_element, identifier) {
+        clearTimeout(_disconnect_stream_timeout);
+        media_element.src = URL.createObjectURL(media_stream);
+        if (!identifier) {
+          media_element.setAttribute('data-source-id', '_system');
+          if (Object.keys(_stream_targets).length) {
+            media_element.play();
+          }
+        }
+        else {
+          media_element.setAttribute('data-source-id', identifier);
+          _stream_targets[identifier] = {source: media_stream, target: media_element};
+          media_element.play();
+        }
       };
     }
+    _disconnect_stream = function(media_element, identifier){
+      try {
+        media_element.src = '';
+        media_element.pause();
+        
+        if (_stream_targets[identifier]) {
+          delete(_stream_targets[identifier]);
+          
+          if (!Object.keys(_stream_targets).length) {
+            // stop the stream entirely as nothing is listening
+            try {
+              // TODO - add a timeout so we don't turn it on and off multiple times when switching views and multiple items have visibility changed
+              // 1s should be more than enough
+              clearTimeout(_disconnect_stream_timeout);
+              _disconnect_stream_timeout = setTimeout(function(){
+                this_awe.video_streams.delete('default');
+              }, 1000);
+            }
+            catch(e) {
+              console.error('awe.video_streams.delete',e)
+            }
+          }
+        }
+      }
+      catch(e){ console.log('disconnect_stream',e)}
+    };
 
     function _clean_object(object, list_of_keys) {
       var keys = {};
@@ -1405,19 +1110,108 @@ function awe_v8() {
       }
       return object;
     }
+    function _extend() {
+			var src, copy, name, options,
+				target = arguments[0] || {},
+				i = 1,
+				length = arguments.length;
+			if (typeof target !== 'object') {
+				target = {};
+			}
+			for (; i < length; i++) {
+				if ((options = arguments[ i ]) !== null) {
+					for (name in options) {
+						src = target[name];
+						copy = options[name];
+						if (src === copy) {
+							continue;
+						}
+						if (copy !== undefined) {
+							target[name] = copy;
+						}
+					}
+				}
+			}
+			return target;
+		}
+		    // https://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
+    function _type(obj){
+      return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+    }
     
+    function _clone_deep(obj) {
+      if (obj === null || typeof obj !== 'object') {
+          return obj;
+      }
+   
+      var temp = obj.constructor(); // give temp the original obj's constructor
+      for (var key in obj) {
+          temp[key] = _clone_deep(obj[key]);
+      }
+   
+      return temp;
+    }
+    
+    function _clone(obj) {
+      if (null == obj || "object" != typeof obj) return obj;
+      var copy = obj.constructor();
+      for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+      }
+      return copy;
+    }
+
+    function _get_settings(ids){
+      ids = Array.isArray(ids) ? ids.join('|') : ids;
+      var b = {};
+      if (ids) {
+        b.id = ids
+      };
+      var settings = {};
+      this_awe.settings.list(b).forEach(function(setting){
+        settings[setting.id] = setting.value();
+      });
+      return settings;
+    }
+    function _get_capabilities(ids){
+      ids = Array.isArray(ids) ? ids.join('|') : ids;
+      var b = {};
+      if (ids) {
+        b.id = ids
+      };
+      var capabilities = {};
+      this_awe.capabilities.list(b).forEach(function(capability){
+        capabilities[capability.id] = capability.value();
+      });
+      return capabilities;
+    }
+    var for_each = Function.prototype.call.bind([].forEach);
+		
     var util = {
+      get_capabilities: _get_capabilities,
+      get_settings: _get_settings,
       require: _require,
       get_user_media: _get_user_media,
       connect_stream_to_src: _connect_stream_to_src,
-      clean_object: _clean_object, 
+      disconnect_stream: _disconnect_stream,
+      get_stream_targets: _get_stream_targets,
+      clean_object: _clean_object,
+      extend: _extend ,
+      clone: _clone,
+      clone_deep: _clone_deep,
+      type: _type,
+      for_each: for_each
     };
     
+    
+    window.awe_object = awe_object;
     window.awe = new awe(); 
     this_awe = window.awe;
     this_awe.util = util;
     
     this_awe.AUTO_DETECT_DEVICE_TYPE = true;
   }
-})(window);
+    
 // END FILE:  awe-loader.js file
+
+})(window);

@@ -20,6 +20,15 @@
        });   
      }
     </script>
+    <script language="JavaScript">
+        var count = 0;
+        function refreshCoordinate()
+        {
+            count++;
+            console.log("count = " + count);
+        }
+        setInterval('refreshCoordinate',500); //指定1秒刷新一次
+    </script>
     <script>
     function rotate(){
        var orientation=window.orientation;

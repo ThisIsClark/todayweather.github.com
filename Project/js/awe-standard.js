@@ -1587,6 +1587,9 @@
           near,
           far
         );
+        {
+            this_awe.constructor.prototype.projections.camera = camera
+        }
         if (!settings.default_camera_position) {
           this_awe.settings.add({
             id: 'default_camera_position',
@@ -1871,6 +1874,7 @@
         return this.constructor.prototype.list.call(this, BODY, HEAD); // super
       }
     }
+    this_awe.constructor.prototype.projections.camera = null;
     this_awe.constructor.prototype.projections.add = function(BODY, HEAD) {
       if (!BODY) { BODY = {}; }
       if (!HEAD) { HEAD = {}; }
@@ -2460,6 +2464,7 @@ if (!parent) {
         item.trigger_state(awe.OBJECT_STATES.LOADING);
         result_ids.push(item_id.id);
         finish_add(BODY_item.id);
+        console.log("BODY_item.origin = " + BODY_item.origin);
       });
       return { id: result_ids }; 
     };

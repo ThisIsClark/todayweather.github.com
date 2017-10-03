@@ -1,0 +1,154 @@
+img#home_bg{
+	left: -354px;
+	top: -600px;
+	z-index: 0;
+	/*opacity: 0.5;*/
+	/*-webkit-animation: home_bg_show 1s ease-in-out forwards;
+	-webkit-animation-play-state: paused;*/
+}
+img#home_logo{
+	left: -230px;
+	top: -398px;
+	z-index: 13;
+	opacity: 0;
+	-webkit-filter: blur(5px);
+	-webkit-animation: home_logo_show 1s ease-in 5s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_flower01{
+	left: -280px;
+	top: -718px;
+	z-index: 25;
+	/*opacity: 0;*/
+	transform: translate(140px,-260px);
+	-webkit-animation: home_flower_show 1.8s ease-out 3.2s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_flower02{
+	left: 240px;
+	top: -468px;
+	z-index: 20;
+	/*opacity: 0;*/
+	transform: translate(140px,-260px);
+	-webkit-animation: home_flower_show 1.8s ease-out 3.2s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_hill01{
+	left: -368px;
+	top: 45px;
+	z-index: 15;
+	/*opacity: 0;*/
+	transform: translate(-150px,45px);
+	-webkit-animation: home_hill01_show 2.5s ease-out 2.4s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_hill02{
+	left: -370px;
+	top: 256px;
+	z-index: 10;
+	/*opacity: 0;*/
+}
+img#home_poem01{
+	left: 460px;
+	top: 120px;
+	z-index: 5;
+	opacity: 0;
+	-webkit-animation: home_poem_show 0.8s ease-in 1s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_poem02{
+	left: 340px;
+	top: 240px;
+	z-index: 5;
+	opacity: 0;
+	-webkit-animation: home_poem_show 0.8s ease-in 1.7s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_poem03{
+	left: 220px;
+	top: 160px;
+	z-index: 5;
+	opacity: 0;
+	-webkit-animation: home_poem_show 0.8s ease-in 2.4s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_poem04{
+	left: 80px;
+	top: 80px;
+	z-index: 5;
+	opacity: 0;
+	-webkit-animation: home_poem_show 0.8s ease-in 3.1s forwards;
+	-webkit-animation-play-state: paused;
+}
+img#home_start{
+	left: -82px;
+	top: 160px;
+	z-index: 30;
+	opacity: 0;
+	-webkit-mask: url(../img/home/mask_logo.png);
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-size: 172px;
+	-webkit-mask-position: center -171px;
+	/*filter: drop-shadow(0px 0px 3px black);*/
+	/*box-shadow:0px 0px 3px 5px inset;*/
+	-webkit-animation: home_start_show 0.5s linear 6s forwards;
+	-webkit-animation-play-state: paused;
+}
+
+div#home_back_layer{
+	z-index: 0;
+}
+div#home_front_layer{
+	z-index: 10;
+}
+div#home_div{
+	z-index: 5;
+}
+div.home_layer{
+	width: 0px;
+	height: 0px;
+	left: 50%;
+	top: 50%;
+	z-index: 0;
+	opacity: 0;
+	transform: scale(1.25);
+	-webkit-animation: home_bg_show 1.5s ease-in forwards,home_bg_scale 5s ease-in-out 0.5s forwards;
+	-webkit-animation-play-state: paused;
+}
+
+@-webkit-keyframes home_bg_show {
+	0% {opacity: 0;}
+	100% {opacity: 1;}
+}
+@-webkit-keyframes home_bg_scale {
+	0% {transform: scale(1.25);/*top: calc(50% - 150px);*/}
+	100% {transform: scale(1);/*top: 50%;*/}
+}
+@-webkit-keyframes home_hill01_show {
+	0% {transform: translate(-150px,45px);}
+	100% {transform: translate(0,0);}
+}
+@-webkit-keyframes home_flower_show {
+	0% {transform: translate(140px,-250px);}
+	100% {transform: translate(0,0);}
+}
+@-webkit-keyframes home_logo_show {
+	0% {opacity: 0;-webkit-filter: blur(5px);}
+	100% {opacity: 1;-webkit-filter: blur(0px);}
+}
+@-webkit-keyframes home_start_show {
+	0% {opacity: 1;-webkit-mask-position: center -171px;}
+	100% {opacity: 1;-webkit-mask-position: center 0px;}
+}
+@-webkit-keyframes home_poem_show {
+	0% {opacity: 0;}
+	100% {opacity: 1;}
+}
+@-webkit-keyframes home_start_idle{
+	0% {transform:translate(0px,0px);}
+	100% {transform:translate(0px,20px);}
+}
+@-webkit-keyframes home_quit{
+	0% {opacity: 1;}
+	100% {opacity: 0;}
+}

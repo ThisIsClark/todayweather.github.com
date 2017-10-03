@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html >
+<head>
+	<title>“宜居水岸” - AR</title>
+	<link rel="icon" href="img/favicon.ico"/> 
+	<meta charset="UTF-8">
+	<script src="js/preloadjs-min.js"></script>				<!--导入preloadjs文件-->
+	<script src="js/tween.js"></script>						<!--导入Tween js文件-->
+	<script src="config/baseText.js"></script> 				<!--导入基础文本js文件-->
+	<script src="js/easyParticle.js"></script>				<!--导入粒子特效js文件-->
+	
+	<!--导入app的基础逻辑，包括屏蔽微信按钮，禁止微信下拉，旋转屏幕后重设分辨率meta等功能-->
+	<script src="js/appBase.js"></script> 		
+	<!--<link rel="stylesheet" type="text/css" href="css/sceneHome.css"/>-->
+	<!--app全局样式设定-->
+	<style> 
+		* {padding: 0;margin: 0;position: absolute;}
+		body{
+			/*background-color: lightcyan;*/
+			/*overflow: hidden;*/
+			position: fixed;
+			width: 100vw;
+			height: 100vh;
+		}
+		div.scene{
+			/*background-color:crimson;*/
+			width: 640px;
+			height: 1136px;
+			left:50%;
+			top:50%;
+			transform: translate(-50%,-50%);
+			overflow: hidden;
+		}
+		img{
+			/*pointer-events: none;*/
+			/*-webkit-user-select:none;*/
+			/*-webkit-touch-callout: none;*/
+		}
+	</style>
+</head>
+
+<body>
+	<div class="scene" id="home_div" >
+		<div id="home_back_layer" class="home_layer"></div>
+		<div id="home_front_layer" class="home_layer"></div>
+		<p id = "tmpstr" style="z-index:25;top: 200px;left: 50px;"></p>  <!--临时显示，到时候删-->
+	</div>
+	<div class="scene" id="main_div">
+		
+	</div>
+	<div class="scene" id="loadIn_div" >
+		<canvas id="loadIn_stage" width = "640px" height="1136px"></canvas>
+		<p id="loadIn_title"></p>
+	</div>
+</body>
+
+</html>

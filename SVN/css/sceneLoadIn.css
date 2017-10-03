@@ -1,0 +1,25 @@
+p#loadIn_title{
+	top: 950px;
+	left: 320px;
+	transform: translate(-45%,0);
+	font-size: 40px;
+	text-align: center;
+	color:darkgreen;
+	text-shadow: 1px 1px 0px #636363;
+	opacity: 0;
+}
+p.loadIn_title_ani{
+	-webkit-animation: loadIn_title_in 4s ease-in-out;
+}
+div#loadIn_div{
+	pointer-events: none;
+	z-index: 10;
+}
+@-webkit-keyframes loadIn_title_in{
+	0% {opacity: 0;}
+	100% {opacity: 1;}
+}
+@-webkit-keyframes loadIn_title_out{
+	0% {opacity: 1;}
+	100% {opacity: 0;}
+}

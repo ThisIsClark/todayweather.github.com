@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>“宜居水岸” - AR应用1</title>
+    <script src="js/debuggap.js" type="text/javascript"></script>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta charset="utf-8"/>
+    <script>
+        function load(){
+            document.addEventListener('touchmove', function(e) {
+              e.preventDefault();
+            });   
+        }
+    </script>
+    <script>
+    function rotate(){
+        var orientation=window.orientation;
+        if(orientation==90||orientation==-90){
+            document.body.style.display='none';
+            alert("请使用竖屏访问！");
+        }
+    }
+    window.onorientationchange=function(){
+      document.body.style.display="block";
+      rotate();
+    }
+    </script>
+<style type="text/css">
+* {
+	margin: 0;
+	padding: 0;
+}
+img,div {
+position: absolute;
+}
+div#state_bar {
+background: brown;
+width: 100%;
+height: 8%;
+margin: 0;
+}
+img#frame {
+width: 100%;
+height: 100%;
+}
+img#map {
+width:35.5%;
+top:0;
+right: 0;
+}
+img#guide {
+width: 16.6%;
+right: 3%;
+bottom: 2%;
+}
+img#text_back {
+width: 69.6%;
+left: 7%;
+bottom: 2.5%;
+}
+img#focus {
+left: 48%;
+bottom: 50%;
+}
+#container {
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	overflow: hidden;
+}
+</style>
+</head>
+<body style="overflow: hidden;position: fixed;width: 100%;height: 100%;margin: 0;"  onload="load()">
+<div id="container"></div>
+<script type="text/javascript" src="js/awe-v8.js"></script>
+<script type="text/javascript" src="js/awe-loader.js"></script>
+<script type="text/javascript">
+    var tagData = new Array();
+    function refreshCoordinate()
+    {
+        var p1 = new THREE.Vector3(0, 0, 150);
+        var p2 = new THREE.Vector3(150, 0, 0);
+        var p3 = new THREE.Vector3(100, 0, 100);
+
+        var vector1 = p1.project(awe.projections.camera);
+        var vector2 = p2.project(awe.projections.camera);
+        var vector3 = p3.project(awe.projections.camera);
+
+        vector1.x = (vector1.x + 1) / 2 * 1440;
+        vector1.y = -(vector1.y - 1) / 2 * 2560;
+        vector2.x = (vector2.x + 1) / 2 * 1440;
+        vector2.y = -(vector2.y - 1) / 2 * 2560;
+        vector3.x = (vector3.x + 1) / 2 * 1440;
+        vector3.y = -(vector3.y - 1) / 2 * 2560;
+        
+        if(vector1.x > 680 && vector1.x < 760 && vector1.y > 1200 && vector1.y <1360)
+            {
+                alert("aimed 1")
+            }
+        if(vector2.x > 680 && vector2.x < 760 && vector2.y > 1200 && vector2.y <1360)
+            {
+                alert("aimed 2")
+            }
+        if(vector3.x > 680 && vector3.x < 760 && vector3.y > 1200 && vector3.y <1360)
+            {
+                alert("aimed 3")
+            }
+        var tagData0 = new Object();
+        tagData0.index = 0;
+        tagData0.x = vector1.x;
+        tagData0.y = vector1.y;
+        tagData[0] = tagData0;
+        
+        var tagData1 = new Object();
+        tagData1.index = 1;
+        tagData1.x = vector2.x;
+        tagData1.y = vector2.y;
+        tagData[1] = tagData1;
+        
+        var tagData2 = new Object();
+        tagData2.index = 2;
+        tagData2.x = vector3.x;
+        tagData2.y = vector3.y;
+        tagData[2] = tagData2;
+    }
+    function getTagData()
+    {
+        return tagData;
+    }
+    
+  window.addEventListener('load', function() {
+    // initialize awe after page loads
+    window.awe.init({
+      // automatically detect the device type
+      device_type: awe.AUTO_DETECT_DEVICE_TYPE,
+      // populate some default settings
+      settings: {
+      	container_id: 'container',
+        fps: 30,
+        default_camera_position: { x:0, y:0, z:0 },
+        default_lights:[
+          {
+            id: 'hemisphere_light',
+            type: 'hemisphere',
+            color: 0xCCCCCC
+          },
+        ],
+      },
+      ready: function() {
+        var d = '?_='+Date.now();
+
+        // load js files based on capability detection then setup the scene if successful
+        awe.util.require([
+          {
+            capabilities: ['webgl','gum'],
+            files: [ 
+              [ 'js/awe-standard-dependencies.js'+d, 'js/awe-standard.js'+d ], // core dependencies for this app 
+              ['js/plugins/StereoEffect.js'+d, 'js/plugins/VREffect.js'+d], // dependencies for render effects
+              'js/plugins/awe.rendering_effects.js'+d,
+              'js/plugins/awe-standard-object_clicked_or_focused.js'+d, // object click/tap handling plugin
+              'awe.gyro.js'+d, // basic gyro handling
+              'awe.mouse.js'+d, // basic mouse handling
+            ],
+            success: function() { 
+              // setup and paint the scene
+			        awe.setup_scene();
+
+  						var click_plugin = awe.plugins.view('object_clicked');
+  						if (click_plugin) {
+    						click_plugin.register();
+    						click_plugin.enable();
+  						}
+  						var gyro_plugin = awe.plugins.view('gyro');
+  						if (gyro_plugin) {
+    						gyro_plugin.enable();
+  						}
+  						var mouse_plugin = awe.plugins.view('gyro');
+  						if (gyro_plugin) {
+    						gyro_plugin.enable();
+  						}
+
+              awe.settings.update({data:{value: 'ar'}, where:{id: 'view_mode'}})
+  						var render_effects_plugin = awe.plugins.view('render_effects');
+  						if (render_effects_plugin) {
+    						render_effects_plugin.enable();
+  						}
+        
+              // setup some code to handle when an object is clicked/tapped
+              window.addEventListener('object_clicked', function(e) { 
+                var p = awe.projections.view(e.detail.projection_id);
+                awe.projections.update({ // rotate clicked object by 180 degrees around x and y axes over 10 seconds
+                  data:{
+                    animation: {
+                      duration: 10,
+                    },
+                    rotation:{ y: p.rotation.y+180, x: p.rotation.x+180 }
+                  },
+                  where:{ id:e.detail.projection_id }
+                });
+              }, false);
+
+			        // add some points of interest (poi) for each of the compass points
+			        awe.pois.add({ id:'north', position: { x:0, y:0, z:150 } });
+			        awe.pois.add({ id:'east', position: { x:150, y:0, z:0 } });
+                    awe.pois.add({ id:'south', position: { x:100, y:0, z:100 } });
+                
+			        // add projections to each of the pois
+			        awe.projections.add({ 
+			          id:'n', 
+			          geometry:{ shape:'sphere', radius:10 }, 
+			          material:{ 
+			            type: 'phong',
+			            color:0xFF0000, 
+			          },
+			        }, { poi_id: 'north' });
+			        awe.projections.add({ 
+			          id:'e', 
+			          geometry:{ shape:'sphere', radius:10 }, 
+			          material:{ 
+			            type: 'phong',
+			            color:0x00FF00, 
+			          },
+			        }, { poi_id: 'east' });
+			        awe.projections.add({ 
+			          id:'s', 
+			          geometry:{ shape:'sphere', radius:10 }, 
+			          material:{ 
+			            type: 'phong',
+			            color:0x0000FF, 
+			          },
+			        }, { poi_id: 'south' });
+                    setInterval('refreshCoordinate()',500); //指定刷新一次
+
+            },
+          },
+          { // else create a fallback
+            capabilities: [],
+            files: [],
+            success: function() { 
+              document.body.innerHTML = '<p>This demo currently requires a standards compliant mobile browser.';
+              return;
+            },
+          },
+        ]);
+      }
+    });
+  });
+</script>
+<div id="arrow"></div>
+<div id="state_bar">
+  
+</div>
+<img id="frame" src="img/main/frame.png"/>
+<img id="map" src="img/main/map_frame.png"/>
+<img id="guide" src="img/main/guide.png" />
+<img id="text_back" src="img/main/text_frame.png" />
+<img id="focus" src="img/main/focus.png">
+
+</body>
+</html>
